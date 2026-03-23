@@ -1,0 +1,2924 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>จองห้องพัก - Mudchim RxSU38</title>
+  <style>   
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --green: #1a6b5a;
+      --green-dark: #0d3d2e;
+      --green-soft: #f0faf7;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --ok: #16a34a;
+      --ok-bg: #dcfce7;
+      --warn: #ca8a04;
+      --warn-bg: #fef9c3;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      --radius: 18px;
+    }
+
+    body {
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: linear-gradient(180eg, #ffffff 0%,#000000 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+}
+
+    /* ==================== HERO SECTION ==================== */
+    .hero {
+      background: linear-gradient(135deg, var(--green), var(--green-dark));
+      color: #fff;
+      padding: 28px 18px 34px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 8px 24px rgba(13, 61, 46, 0.18);
+    }
+
+    .hero h1 {
+      font-size: 24px;
+      margin-top: 8px;
+      font-weight: 900;
+    }
+
+    .hero-project {
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 4px;
+      opacity: 0.9;
+      letter-spacing: 0.5px;
+    }
+
+    .hero-sub {
+      margin-top: 6px;
+      font-size: 11px;
+      opacity: 0.55;
+    }
+
+    /* ==================== CONTAINERS ==================== */
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px 14px 70px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 880px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Booking page layout */
+    #bookingPage {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    #mapPage {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    #homePage {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* ==================== SIDEBAR ADJUSTMENTS ==================== */
+    #sidebarInfo {
+      max-width: 100% !important;
+      margin-top: 20px;
+    }
+
+    #sidebarInfo .card {
+      background: linear-gradient(135deg, #f0faf7, #f7fcfa);
+      border: 1px solid #d8eee5;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      padding: 24px;
+    }
+
+    /* ==================== TABS ==================== */
+    .top-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 18px;
+      justify-content: center;
+    }
+
+    .tab-btn {
+      flex: 0 1 auto;
+      min-width: 140px;
+      border: none;
+      background: #f3f4f6;
+      color: #374151;
+      padding: 12px 20px;
+      border-radius: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+    }
+
+    .tab-btn:hover {
+      transform: translateY(-1px);
+      background: #e5e7eb;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--green), var(--green-dark));
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(26, 107, 90, 0.22);
+    }
+
+    @media (max-width: 640px) {
+      .top-tabs {
+        flex-direction: row;
+        justify-content: stretch;
+      }
+
+      .tab-btn {
+        flex: 1;
+        min-width: auto;
+        font-size: 13px;
+        padding: 10px 12px;
+      }
+    }
+
+    /* ==================== MODALS ==================== */
+    .overlay,
+    .success-overlay,
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0);
+      backdrop-filter: blur(0px);
+      -webkit-backdrop-filter: blur(0px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 999;
+      transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  -webkit-backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .success-overlay,
+    .confirm-overlay {
+      z-index: 998;
+    }
+
+    .overlay.active,
+    .success-overlay.active,
+    .confirm-overlay.active {
+      background: rgba(0, 0, 0, 0.58);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      pointer-events: auto;
+      opacity: 1;
+      display: flex !important;
+    }
+
+    .login-box,
+    .success-box,
+    .confirm-box {
+      background: #fff;
+      border-radius: 30px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      padding: 36px 28px 32px;
+      animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      transition: transform 0.1s ease;
+    }
+
+    .login-box:active,
+    .success-box:active,
+    .confirm-box:active {
+      transform: scale(0.98);
+    }
+
+    /* ==================== PROGRESS BAR ==================== */
+    #autoCloseProgress {
+      height: 3px;
+      background: linear-gradient(90deg, var(--green), #0d3d2e);
+      border-radius: 999px;
+      transition: width 10s linear;
+    }
+
+    @keyframes closeCountdown {
+      0% {
+        width: 100%;
+      }
+      100% {
+        width: 0%;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.6;
+      }
+    }
+    /* ==================== SUCCESS BOX TAGLINE ==================== */
+    .success-tagline {
+      font-size: 13px;
+      color: var(--green);
+      font-weight: 700;
+      font-style: italic;
+      margin-top: 10px;
+      letter-spacing: 0.3px;
+    }
+        
+    /* ==================== SUCCESS OVERLAY ENHANCEMENTS ==================== */
+    .success-box {
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+
+    .success-box:hover {
+      transform: scale(1.02);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Responsive for Success Box */
+    @media (max-width: 480px) {
+      .success-box {
+        max-width: 88% !important;
+      }
+
+      .success-box > div:nth-child(2) {
+        font-size: 18px !important;
+      }
+    }
+
+    /* Responsive for Success Box */
+    @media (max-width: 480px) {
+      .success-box {
+        max-width: 88% !important;
+      }
+
+      .success-box > div:nth-child(2) {
+        font-size: 18px !important;
+      }
+    }
+    @media (max-width: 480px) {
+        .login-box {
+    padding: 28px 20px 24px;  
+    }
+    }
+    /* ==================== FORMS ==================== */
+    .input-group {
+      text-align: left;
+      margin-bottom: 14px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 15px;
+      outline: none;
+      transition: all 0.2s ease;
+      background: #fff;
+    }
+
+    .input-group input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 4px rgba(26, 107, 90, 0.08);
+    }
+
+    /* ==================== USER CARD ==================== */
+    .user-card {
+      background: linear-gradient(135deg, var(--green), var(--green-dark));
+      color: #fff;
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .user-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .user-name {
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .user-id {
+      font-size: 11px;
+      opacity: 0.8;
+      margin-top: 2px;
+    }
+
+    /* ==================== STEP INDICATOR ==================== */
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 0 0 28px;
+      flex-wrap: wrap;
+    }
+
+    .step-dot {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e5e7eb;
+      color: #6b7280;
+      font-weight: 800;
+      font-size: 13px;
+      transition: all 0.2s ease;
+    }
+
+    .step-dot.active {
+      background: var(--green);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(26, 107, 90, 0.3);
+    }
+
+    .step-dot.done {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .step-line {
+      flex: 1;
+      max-width: 62px;
+      height: 3px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      transition: all 0.3s ease;
+    }
+
+    .step-line.done {
+      background: var(--green);
+    }
+
+    /* ==================== SECTIONS ==================== */
+    .section-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--green);
+      margin-bottom: 14px;
+    }
+
+    /* ==================== TYPE SELECTOR ==================== */
+    .type-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 14px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .type-card {
+      background: #fff;
+      border-radius: 18px;
+      border: 2px solid transparent;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      padding: 24px 18px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .type-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--green);
+      box-shadow: 0 12px 32px rgba(26, 107, 90, 0.12);
+    }
+
+    .type-card.selected {
+      border-color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .type-emoji {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .type-label {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .type-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ==================== ROOM CARDS CONTAINER ==================== */
+    #roomsContainer {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .room-card {
+      background: #fff;
+      border-radius: 16px;
+      border: 2px solid transparent;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+      padding: 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .room-card:hover:not(.disabled) {
+      transform: translateY(-2px);
+      border-color: var(--green);
+      box-shadow: 0 10px 28px rgba(26, 107, 90, 0.12);
+    }
+
+    .room-card.selected {
+      border-color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .room-card.disabled {
+      opacity: 0.52;
+      cursor: not-allowed;
+      background: #fafafa;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .room-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .room-emoji {
+      font-size: 30px;
+      flex-shrink: 0;
+    }
+
+    .room-name {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .room-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 5px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .badge.available {
+      background: var(--ok-bg);
+      color: var(--ok);
+    }
+
+    .badge.almost {
+      background: var(--warn-bg);
+      color: var(--warn);
+    }
+
+    .badge.full {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .check-circle {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #d1d5db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .room-card.selected .check-circle {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ==================== SUMMARY CARD - COMPACT ==================== */
+    .summary-card {
+      background: linear-gradient(135deg, #f8fcfb, #f0faf7);
+      border-radius: 16px;
+      border: 1px solid #d8eee5;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .summary-card > div:first-child {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .summary-card > div:first-child > div:first-child {
+      font-size: 36px !important;
+      flex-shrink: 0;
+    }
+
+    .s-label {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+
+    .s-room {
+      font-size: 16px !important;
+      font-weight: 800;
+      color: var(--green);
+    }
+
+    .s-info {
+      font-size: 12px !important;
+      color: #4b5563;
+      margin-top: 4px;
+    }
+
+    /* ==================== BOOKING CARD - COMPACT ==================== */
+    .booking-card {
+      background: linear-gradient(135deg, #f8fcfb, #f0faf7);
+      border-radius: 14px;
+      border: 1px solid #d8eee5;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .bc-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .bc-icon {
+      font-size: 32px;
+      flex-shrink: 0;
+    }
+
+    .bc-label {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 2px;
+    }
+
+    .bc-room {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .bc-type {
+      font-size: 12px;
+      color: var(--green);
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .bc-detail {
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    /* ==================== MAP CARD ==================== */
+    .map-card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .map-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 18px;
+      font-weight: 800;
+      color: var(--green);
+      font-size: 15px;
+      background: #f8fcfb;
+      border-bottom: 1px solid #e5efe9;
+    }
+
+    .map-wrap {
+      padding: 16px;
+    }
+
+    .map-img {
+      width: 100%;
+      border-radius: 16px;
+      display: block;
+      border: 1px solid #e5e7eb;
+      background: #f8fafc;
+    }
+
+    .map-empty {
+      border: 2px dashed #d1d5db;
+      border-radius: 14px;
+      padding: 30px 16px;
+      text-align: center;
+      color: #6b7280;
+      background: #fafafa;
+    }
+
+    /* ==================== BUTTONS ==================== */
+    .btn {
+      width: 100%;
+      max-width: 100%;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #155c4a;
+      box-shadow: 0 8px 24px rgba(26, 107, 90, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: #fff;
+      color: var(--danger);
+      border: 2px solid var(--danger);
+      margin-top: 4px;
+    }
+
+    .btn-outline:hover:not(:disabled) {
+      background: #fff5f5;
+    }
+
+    .btn:disabled {
+      background: #d1d5db;
+      color: #fff;
+      cursor: not-allowed;
+      box-shadow: none;
+      opacity: 0.8;
+    }
+
+    .btn-back {
+      background: none;
+      border: 2px solid var(--green);
+      color: var(--green);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      margin: 0 0 14px 0;
+      width: fit-content;
+      display: inline-flex;
+    }
+
+    .btn-back:hover {
+      background: var(--green-soft);
+    }
+
+    /* ==================== ALERTS ==================== */
+    .alert {
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      display: none;
+      margin-top: 12px;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      animation: slideDown 0.3s ease;
+    }
+
+    .alert.success {
+      background: var(--ok-bg);
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .alert.error {
+      background: var(--danger-bg);
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+
+    /* ==================== SPINNER ==================== */
+    .spinner {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      border: 3px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+    }
+
+    .spinner-red {
+      border: 3px solid rgba(220, 38, 38, 0.28) !important;
+      border-top-color: #dc2626 !important;
+    }
+
+    /* ==================== SKELETON ==================== */
+    .skeleton {
+      background: linear-gradient(
+        90deg,
+        #f0f0f0 25%,
+        #e6e6e6 50%,
+        #f0f0f0 75%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      border-radius: 14px;
+      height: 105px;
+      margin-bottom: 12px;
+    }
+
+    /* ==================== SIDEBAR INFO ==================== */
+    #sidebarInfo .card > div {
+      text-align: center;
+    }
+
+    #sidebarInfo .card > div > div:first-child {
+      font-size: 42px;
+      margin-bottom: 12px;
+    }
+
+    #sidebarInfo .card > div > div:nth-child(2) {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+
+    #sidebarInfo .card > div > div:nth-child(3) {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    #sidebarInfo .card > div > div:nth-child(3) p {
+      margin: 4px 0;
+    }
+
+    /* ==================== ANIMATIONS ==================== */
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0;
+      }
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ==================== RESPONSIVE ==================== */
+    @media (max-width: 768px) {
+      .container {
+        padding: 16px 12px 60px;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
+      .type-selector {
+        grid-template-columns: 1fr;
+      }
+
+      .type-card {
+        padding: 18px 14px;
+      }
+
+      .type-emoji {
+        font-size: 36px;
+      }
+
+      .hero-project {
+        font-size: 11px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 {
+        font-size: 20px;
+      }
+
+      .hero-project {
+        font-size: 10px;
+      }
+
+      .container {
+        padding: 12px 10px 50px;
+      }
+
+      .card {
+        padding: 14px;
+        border-radius: 14px;
+      }
+
+      .step-dot {
+        width: 26px;
+        height: 26px;
+        font-size: 12px;
+      }
+
+      .room-card {
+        padding: 12px;
+      }
+
+      .btn {
+        padding: 11px 14px;
+        font-size: 13px;
+      }
+
+      .summary-card {
+        padding: 14px;
+      }
+    }
+
+/* Computer (Desktop) - ใหญ่ที่สุด */
+@media (max-width: 1440px) {
+  .container {
+    max-width: 900px;
+  }
+
+  .card {
+    padding: 22px;
+  }
+}
+
+/* iPad Landscape (1024px - 1200px) */
+@media (max-width: 1200px) {
+  .container {
+    padding: 18px 14px 60px;
+    max-width: 850px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  .type-selector {
+    gap: 14px;
+  }
+
+  .room-card {
+    padding: 15px;
+  }
+}
+
+/* iPad Portrait (768px - 1024px) */
+@media (max-width: 1024px) {
+  .container {
+    padding: 16px 12px 60px;
+    max-width: 750px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .card {
+    padding: 18px;
+  }
+
+  .hero {
+    padding: 24px 16px 30px;
+  }
+
+  .hero h1 {
+    font-size: 22px;
+  }
+
+  .hero-project {
+    font-size: 11px;
+  }
+
+  .type-selector {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .type-card {
+    padding: 20px 16px;
+  }
+
+  .type-emoji {
+    font-size: 36px;
+  }
+
+  .room-card {
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .room-name {
+    font-size: 15px;
+  }
+
+  .room-emoji {
+    font-size: 28px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    min-width: auto;
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  .top-tabs {
+    justify-content: stretch;
+  }
+
+  .user-avatar {
+    width: 46px;
+    height: 46px;
+  }
+
+  .booking-card {
+    padding: 12px;
+  }
+
+  .bc-icon {
+    font-size: 30px;
+  }
+}
+
+/* Tablet (768px) */
+@media (max-width: 768px) {
+  .container {
+    padding: 14px 10px 55px;
+    max-width: 100%;
+  }
+
+  .card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .hero {
+    padding: 22px 14px 26px;
+  }
+
+  .hero h1 {
+    font-size: 20px;
+  }
+
+  .hero-project {
+    font-size: 10px;
+  }
+
+  .type-selector {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    max-width: 450px;
+  }
+
+  .type-card {
+    padding: 18px 14px;
+  }
+
+  .type-emoji {
+    font-size: 34px;
+  }
+
+  .room-card {
+    padding: 13px;
+    margin-bottom: 9px;
+  }
+
+  .room-name {
+    font-size: 14px;
+  }
+
+  .section-title {
+    font-size: 15px;
+  }
+
+  .summary-card {
+    padding: 15px;
+  }
+
+  .btn {
+    padding: 11px 14px;
+    font-size: 13px;
+  }
+
+  .top-tabs {
+    gap: 10px;
+  }
+
+  .tab-btn {
+    font-size: 12px;
+    padding: 10px 14px;
+  }
+
+  .user-card {
+    padding: 13px;
+  }
+
+  .user-avatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .user-name {
+    font-size: 15px;
+  }
+
+  .booking-card {
+    padding: 11px;
+  }
+
+  .bc-room {
+    font-size: 15px;
+  }
+
+  .map-head {
+    padding: 13px 15px;
+    font-size: 13px;
+  }
+}
+
+/* Large Phone (600px - 768px) */
+@media (max-width: 640px) {
+  .container {
+    padding: 12px 8px 48px;
+  }
+
+  .card {
+    padding: 14px;
+    border-radius: 13px;
+  }
+
+  .hero {
+    padding: 20px 12px 24px;
+  }
+
+  .hero h1 {
+    font-size: 19px;
+  }
+
+  .hero-project {
+    font-size: 9px;
+  }
+
+  .type-selector {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    max-width: 100%;
+  }
+
+  .type-card {
+    padding: 16px 12px;
+  }
+
+  .type-emoji {
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+
+  .type-label {
+    font-size: 14px;
+  }
+
+  .type-sub {
+    font-size: 11px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    margin-bottom: 11px;
+  }
+
+  .step-indicator {
+    margin: 0 0 18px;
+  }
+
+  .step-dot {
+    width: 27px;
+    height: 27px;
+    font-size: 11px;
+  }
+
+  .step-line {
+    max-width: 55px;
+  }
+
+  .room-card {
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+
+  .room-emoji {
+    font-size: 26px;
+  }
+
+  .room-name {
+    font-size: 13px;
+  }
+
+  .room-sub {
+    font-size: 11px;
+  }
+
+  .badge {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .progress-bar {
+    height: 7px;
+    margin-bottom: 5px;
+  }
+
+  .progress-text {
+    font-size: 10px;
+  }
+
+  .summary-card {
+    padding: 13px;
+    margin-bottom: 11px;
+  }
+
+  .summary-card > div:first-child > div:first-child {
+    font-size: 33px;
+  }
+
+  .s-room {
+    font-size: 15px !important;
+  }
+
+  .btn {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .btn-back {
+    padding: 7px 11px;
+    font-size: 12px;
+  }
+
+  .top-tabs {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .tab-btn {
+    font-size: 12px;
+    padding: 9px 12px;
+  }
+
+  .user-card {
+    padding: 12px;
+    gap: 10px;
+    margin-bottom: 13px;
+  }
+
+  .user-avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
+  }
+
+  .user-name {
+    font-size: 14px;
+  }
+
+  .user-id {
+    font-size: 10px;
+  }
+
+  .booking-card {
+    padding: 10px;
+    margin-bottom: 9px;
+  }
+
+  .bc-icon {
+    font-size: 28px;
+  }
+
+  .bc-room {
+    font-size: 14px;
+  }
+
+  .bc-detail {
+    padding: 9px 11px;
+    font-size: 12px;
+  }
+
+  .login-box {
+    max-width: 92%;
+    padding: 28px 20px;
+  }
+
+  .input-group input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .input-group label {
+    font-size: 12px;
+  }
+
+  .map-head {
+    padding: 12px 13px;
+    font-size: 12px;
+  }
+
+  .map-wrap {
+    padding: 11px;
+  }
+
+  #sidebarInfo .card > div > div:first-child {
+    font-size: 38px;
+  }
+
+  #sidebarInfo .card > div > div:nth-child(2) {
+    font-size: 14px;
+  }
+
+  #sidebarInfo .card > div > div:nth-child(3) {
+    font-size: 11px;
+  }
+}
+
+/* Standard Phone (480px - 640px) */
+@media (max-width: 480px) {
+  .container {
+    padding: 11px 6px 42px;
+  }
+
+  .card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .hero {
+    padding: 18px 10px 20px;
+  }
+
+  .hero h1 {
+    font-size: 18px;
+    margin-top: 4px;
+  }
+
+  .hero-project {
+    font-size: 8px;
+    margin-top: 2px;
+  }
+
+  .hero-sub {
+    margin-top: 5px;
+    font-size: 10px;
+  }
+
+  .type-selector {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .type-card {
+    padding: 14px 10px;
+  }
+
+  .type-emoji {
+    font-size: 30px;
+    margin-bottom: 6px;
+  }
+
+  .type-label {
+    font-size: 13px;
+  }
+
+  .type-sub {
+    font-size: 10px;
+  }
+
+  .section-title {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .step-indicator {
+    gap: 6px;
+    margin: 0 0 14px;
+  }
+
+  .step-dot {
+    width: 25px;
+    height: 25px;
+    font-size: 10px;
+  }
+
+  .step-line {
+    max-width: 45px;
+    height: 2px;
+  }
+
+  .room-card {
+    padding: 10px;
+    margin-bottom: 6px;
+  }
+
+  .card-top {
+    gap: 8px;
+  }
+
+  .room-emoji {
+    font-size: 24px;
+  }
+
+  .room-name {
+    font-size: 12px;
+  }
+
+  .room-sub {
+    font-size: 10px;
+    margin-top: 1px;
+  }
+
+  .badge {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+
+  .check-circle {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+  .progress-bar {
+    height: 6px;
+    margin-bottom: 4px;
+  }
+
+  .progress-text {
+    font-size: 9px;
+  }
+
+  .summary-card {
+    padding: 11px;
+    margin-bottom: 9px;
+  }
+
+  .summary-card > div:first-child {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .summary-card > div:first-child > div:first-child {
+    font-size: 30px;
+  }
+
+  .s-room {
+    font-size: 14px !important;
+  }
+
+  .s-label {
+    font-size: 10px;
+  }
+
+  .s-info {
+    font-size: 11px !important;
+  }
+
+  .btn {
+    padding: 9px 10px;
+    font-size: 11px;
+  }
+
+  .btn-back {
+    padding: 6px 9px;
+    font-size: 11px;
+  }
+
+  .top-tabs {
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .tab-btn {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+
+  .user-card {
+    padding: 10px;
+    gap: 8px;
+    margin-bottom: 11px;
+  }
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .user-name {
+    font-size: 13px;
+  }
+
+  .user-id {
+    font-size: 9px;
+  }
+
+  .booking-card {
+    padding: 9px;
+    margin-bottom: 7px;
+  }
+
+  .bc-header {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .bc-icon {
+    font-size: 26px;
+  }
+
+  .bc-label {
+    font-size: 10px;
+  }
+
+  .bc-room {
+    font-size: 13px;
+  }
+
+  .bc-type {
+    font-size: 11px;
+  }
+
+  .bc-detail {
+    padding: 8px 9px;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .login-box {
+    max-width: 94%;
+    padding: 24px 16px;
+  }
+
+  .success-box,
+  .confirm-box {
+    max-width: 90%;
+    padding: 22px 16px;
+  }
+
+  .input-group {
+    margin-bottom: 11px;
+  }
+
+  .input-group label {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  .input-group input {
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+
+  .subtitle {
+    font-size: 11px;
+  }
+
+  .map-card {
+    border-radius: 12px;
+  }
+
+  .map-head {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .map-wrap {
+    padding: 9px;
+  }
+
+  .map-empty {
+    padding: 20px 10px;
+  }
+
+  #sidebarInfo .card > div > div:first-child {
+    font-size: 34px;
+    margin-bottom: 10px;
+  }
+
+  #sidebarInfo .card > div > div:nth-child(2) {
+    font-size: 13px;
+  }
+
+  #sidebarInfo .card > div > div:nth-child(3) {
+    font-size: 10px;
+    line-height: 1.6;
+  }
+
+  #sidebarInfo .card > div > div:nth-child(3) p {
+    margin: 3px 0;
+  }
+}
+
+/* Small Phone (414px - 480px) */
+@media (max-width: 414px) {
+  .hero h1 {
+    font-size: 17px;
+  }
+
+  .type-emoji {
+    font-size: 28px;
+  }
+
+  .room-name {
+    font-size: 11px;
+  }
+
+  .btn {
+    font-size: 10px;
+    padding: 8px 9px;
+  }
+
+  .summary-card > div:first-child > div:first-child {
+    font-size: 28px;
+  }
+}
+
+/* Extra Small Phone (320px - 414px) */
+@media (max-width: 375px) {
+  .container {
+    padding: 10px 5px 38px;
+  }
+
+  .card {
+    padding: 10px;
+  }
+
+  .hero {
+    padding: 16px 8px 18px;
+  }
+
+  .hero h1 {
+    font-size: 16px;
+  }
+
+  .hero-project {
+    font-size: 7px;
+  }
+
+  .hero-sub {
+    font-size: 9px;
+  }
+
+  .type-card {
+    padding: 12px 8px;
+  }
+
+  .type-emoji {
+    font-size: 26px;
+  }
+
+  .type-label {
+    font-size: 12px;
+  }
+
+  .room-name {
+    font-size: 11px;
+  }
+
+  .btn {
+    font-size: 9px;
+    padding: 7px 8px;
+  }
+
+  .tab-btn {
+    font-size: 10px;
+    padding: 7px 8px;
+  }
+
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .user-name {
+    font-size: 12px;
+  }
+
+  .login-box {
+    max-width: 96%;
+    padding: 20px 14px;
+  }
+
+  .input-group input {
+    font-size: 12px;
+    padding: 8px 9px;
+  }
+
+  #sidebarInfo .card > div > div:first-child {
+    font-size: 30px;
+  }
+
+  #sidebarInfo .card > div > div:nth-child(2) {
+    font-size: 12px;
+  }
+}
+
+/* iPhone SE / Small devices (320px) */
+@media (max-width: 320px) {
+  .hero h1 {
+    font-size: 15px;
+  }
+
+  .type-emoji {
+    font-size: 24px;
+  }
+
+  .room-card {
+    padding: 8px;
+  }
+
+  .btn {
+    font-size: 8px;
+    padding: 6px 7px;
+  }
+
+  .summary-card {
+    padding: 9px;
+  }
+}
+  </style>
+</head>
+<body>
+  <!-- ==================== LOGIN MODAL ==================== -->
+  <div class="overlay active" id="loginOverlay">
+    <div class="login-box">
+      <div style="font-size: 46px; margin-bottom: 10px">🏨</div>
+      <h2
+        style="
+          font-size: 21px;
+          font-weight: 900;
+          color: var(--green);
+          margin-bottom: 4px;
+        "
+      >
+        จองห้องพัก
+      </h2>
+      <div style="font-size: 11px; color: var(--green); font-weight: 700; margin-bottom: 16px;">
+        Mudchim RxSU38
+      </div>
+      <div class="subtitle">กรุณาเข้าสู่ระบบเพื่อดำเนินการ</div>
+
+      <div class="input-group">
+        <label>👤 ชื่อ-นามสกุล</label>
+        <input
+          type="text"
+          id="loginName"
+          placeholder="กรอกชื่อ-นามสกุล"
+          autocomplete="off"
+        />
+      </div>
+      <div class="input-group">
+        <label>🎓 รหัสนักศึกษา (9 หลัก)</label>
+        <input
+          type="text"
+          id="loginStudentId"
+          placeholder="เช่น 660810XXX"
+          maxlength="9"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="alert" id="loginAlert"></div>
+      <button class="btn btn-primary" id="loginBtn">เข้าสู่ระบบ</button>
+      <div style="font-size: 11px; color: #bbb; margin-top: 14px">
+        by ฝ่ายโสต Mudchim RxSU38
+      </div>
+    </div>
+  </div>
+    <!-- ==================== SUCCESS MODAL ==================== -->
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-box" id="successBox">
+      <div style="font-size: 56px; margin-bottom: 10px">🎉</div>
+      <div
+        style="
+          font-size: 20px;
+          font-weight: 900;
+          color: var(--green);
+          margin-bottom: 6px;
+        "
+      >
+        จองสำเร็จ!
+      </div>
+      <div style="font-size: 15px; color: #555">
+        ห้อง <strong id="successRoom">-</strong>
+      </div>
+      <div class="success-tagline">✨ Midway moment, still growing ✨</div>
+      
+      <!-- Progress Bar เพิ่มด้านล่าง -->
+      <div style="
+        margin-top: 20px;
+        height: 3px;
+        background: #e5e7eb;
+        border-radius: 999px;
+        overflow: hidden;
+      ">
+        <div id="autoCloseProgress" style="
+          height: 100%;
+          background: linear-gradient(90deg, var(--green), #0d3d2e);
+          width: 100%;
+          border-radius: 999px;
+        "></div>
+      </div>
+      
+      <div style="
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid #e5e7eb;
+        font-size: 12px;
+        color: #9ca3af;
+        font-weight: 600;
+      ">
+        ⬇️ แตะเพื่อปิด
+    
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CONFIRM MODAL ==================== -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <div style="font-size: 40px; margin-bottom: 10px">⚠️</div>
+      <h3
+        style="
+          font-size: 18px;
+          font-weight: 900;
+          color: var(--danger);
+          margin-bottom: 8px;
+        "
+      >
+        ยืนยันการยกเลิก?
+      </h3>
+      <p
+        id="confirmCancelText"
+        style="font-size: 14px; color: #555; margin-bottom: 24px"
+      >
+        คุณต้องการยกเลิกการจองนี้ใช่ไหม?
+      </p>
+      <div style="display: flex; gap: 10px">
+        <button
+          class="btn"
+          id="confirmNoBtn"
+          style="background: #f3f4f6; color: #111827"
+        >
+          ไม่ใช่
+        </button>
+        <button
+          class="btn"
+          id="confirmYesBtn"
+          style="background: var(--danger); color: #fff"
+        >
+          ยืนยัน
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== HERO SECTION ==================== -->
+   <div class="hero">
+    <div style="font-size: 40px">🏨</div>
+    <h1>ระบบจองห้องพัก</h1>
+    <div class="hero-project">Mudchim RxSU38</div>
+    <div style="
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-top: 10px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+    ">
+      <div id="heroName" style="font-size: 14px; font-weight: 700; color: #fff;"></div>
+      <span style="width: 1px; height: 20px; background: rgba(255,255,255,0.3);"></span>
+      <div id="heroId" style="font-size: 14px; font-weight: 700; color: #fff;"></div>
+    </div>
+    <div class="hero-sub">by ฝ่ายโสต Mudchim RxSU38</div>
+  </div>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <div class="container">
+    <!-- ==================== LEFT COLUMN (MAIN) - CENTERED ==================== -->
+    <div style="max-width: 700px; margin: 0 auto; width: 100%">
+      <!-- ==================== HOME PAGE (MY BOOKING) ==================== -->
+      <div id="homePage" style="display: none">
+        <div class="card" style="padding: 0; overflow: hidden">
+          <div class="user-card">
+            <div class="user-avatar">👤</div>
+            <div>
+              <div class="user-name" id="homeName">-</div>
+              <div class="user-id" id="homeStudentId">-</div>
+            </div>
+          </div>
+
+          <div style="padding: 16px 16px 18px">
+            <div
+              style="
+                font-size: 14px;
+                font-weight: 800;
+                color: var(--green);
+                margin-bottom: 10px;
+              "
+            >
+              🛏️ ห้องที่จองไว้
+            </div>
+
+            <div class="booking-card">
+              <div class="bc-header">
+                <div class="bc-icon" id="homeEmoji">🛏️</div>
+                <div>
+                  <div class="bc-label">ประเภทห้อง</div>
+                  <div class="bc-room" id="homeRoom">-</div>
+                  <div class="bc-type" id="homeType">-</div>
+                </div>
+              </div>
+              <div class="bc-detail">
+                <div>👤 <span id="homeDetailName">-</span></div>
+                <div style="margin-top: 4px">🎓 <span id="homeDetailId">-</span></div>
+                <div style="margin-top: 4px; font-size: 12px; color: #9ca3af">
+                  🕐 <span id="homeDate">-</span>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn btn-outline" id="cancelBtn">
+              ❌ ยกเลิกการจอง
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== BOOKING PAGE ==================== -->
+      <div id="bookingPage" style="display: none">
+        <div class="top-tabs">
+          <button class="tab-btn active" id="tabRoomsBtn">
+            🛏️ ห้องพัก
+          </button>
+          <button class="tab-btn" id="tabMapBtn">🗺️ แผนที่</button>
+        </div>
+
+        <div id="roomsPage">
+          <div class="card">
+            <div class="step-indicator">
+              <div class="step-dot active" id="dot1">1</div>
+              <div class="step-line" id="line1"></div>
+              <div class="step-dot" id="dot2">2</div>
+              <div class="step-line" id="line2"></div>
+              <div class="step-dot" id="dot3">3</div>
+            </div>
+
+            <!-- STEP 1: Select Type -->
+            <div id="step1">
+              <div class="section-title">🏘️ เลือกประเภทห้อง</div>
+              <div class="type-selector">
+                <div class="type-card" id="type-2person">
+                  <div class="type-emoji">👫</div>
+                  <div class="type-label">ห้อง 2 คน</div>
+                  <div class="type-sub">6 ประเภท</div>
+                </div>
+                <div class="type-card" id="type-4person">
+                  <div class="type-emoji">👨‍👩‍👧‍👦</div>
+                  <div class="type-label">ห้อง 4 คน</div>
+                  <div class="type-sub">2 ประเภท</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 2: Select Room -->
+            <div id="step2" style="display: none">
+              <button class="btn-back" id="backBtn2">← กลับ</button>
+              <div class="section-title" id="step2Title">
+                🏘️ เลือกห้อง
+              </div>
+              <div id="roomsContainer"></div>
+            </div>
+
+            <!-- STEP 3: Confirm Booking -->
+            <div id="step3" style="display: none">
+              <button class="btn-back" id="backBtn3">← กลับ</button>
+              <div class="section-title">✅ ยืนยันการจอง</div>
+
+              <div class="summary-card">
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 14px;
+                    margin-bottom: 12px;
+                  "
+                >
+                  <div style="font-size: 36px" id="summaryEmoji">🛏️</div>
+                  <div>
+                    <div class="s-label">ห้องที่เลือก</div>
+                    <div class="s-room" id="summaryRoom">-</div>
+                    <div class="s-info" id="summaryType">-</div>
+                  </div>
+                </div>
+                <div
+                  style="border-top: 1px solid #d8eee5; padding-top: 12px"
+                >
+                  <div class="s-label">ผู้จอง</div>
+                  <div style="font-size: 14px; font-weight: 800" id="summaryName">
+                    -
+                  </div>
+                  <div
+                    style="
+                      font-size: 13px;
+                      color: #6b7280;
+                      margin-top: 2px;
+                    "
+                    id="summaryId"
+                  >
+                    -
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert" id="bookingAlert"></div>
+              <button class="btn btn-primary" id="confirmBtn">
+                ✅ ยืนยันการจอง
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== MAP PAGE ==================== -->
+        <div id="mapPage" style="display: none">
+          <div class="map-card">
+            <div class="map-head">
+              <span>🗺️ แผนที่โรงแรม</span>
+              <button
+                class="btn-back"
+                id="refreshMapBtn"
+                style="margin: 0; padding: 6px 12px; font-size: 12px"
+              >
+                🔄 รีเฟรช
+              </button>
+            </div>
+            <div class="map-wrap" id="mapContainer">
+              <div class="map-empty">กำลังโหลดแผนที่...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== SIDEBAR INFO - BOTTOM ==================== -->
+      <div id="sidebarInfo" style="display: none">
+        <div class="card">
+          <div>
+            <div>ℹ️</div>
+            <div>ข้อมูลการจอง</div>
+            <div>
+              <p>✓ เลือกประเภทห้อง</p>
+              <p>✓ เลือกห้องที่ต้องการ</p>
+              <p>✓ ยืนยันการจอง</p>
+              <p style="font-size: 11px; color: #9ca3af; margin-top: 12px">
+                หากมีคำถาม กรุณาติดต่อฝ่ายโสต
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script>
+    /**
+     * ROOM BOOKING SYSTEM - Frontend
+     * Optimized version with improved error handling
+     */
+
+    // ==================== UTILITIES ====================
+    const $ = (id) => document.getElementById(id);
+
+    // ==================== STATE MANAGEMENT ====================
+    let currentUser = null;
+    let currentBooking = null;
+    let selectedType = null;
+    let selectedRoom = null;
+    let currentTab = "rooms";
+
+    let isSubmitting = false;
+    let isCancelling = false;
+    let isLoggingIn = false;
+
+    // ==================== INITIALIZATION ====================
+    window.addEventListener("load", () => {
+      initializeEventListeners();
+      loadMap();
+      showRoomsTab();
+    });
+
+    function initializeEventListeners() {
+      // Tab buttons
+      $("tabRoomsBtn").addEventListener("click", showRoomsTab);
+      $("tabMapBtn").addEventListener("click", showMapTab);
+
+      // Login form
+      $("loginBtn").addEventListener("click", doLogin);
+      $("loginName").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") doLogin();
+      });
+      $("loginStudentId").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") doLogin();
+      });
+      $("loginStudentId").addEventListener("input", (e) => {
+        e.target.value = e.target.value.replace(/\D/g, "");
+      });
+
+      // Booking management
+      $("cancelBtn").addEventListener("click", askCancel);
+      $("confirmBtn").addEventListener("click", confirmBooking);
+      $("confirmNoBtn").addEventListener("click", closeConfirm);
+      $("confirmYesBtn").addEventListener("click", doCancel);
+      $("refreshMapBtn").addEventListener("click", loadMap);
+
+      // Type selection
+      $("type-2person").addEventListener("click", () => selectType("2person"));
+      $("type-4person").addEventListener("click", () => selectType("4person"));
+
+      // Step navigation
+      $("backBtn2").addEventListener("click", () => {
+        resetTypeSelection();
+        selectedType = null;
+        selectedRoom = null;
+        goStep(1);
+      });
+
+      $("backBtn3").addEventListener("click", () => goStep(2));
+    }
+
+    // ==================== LOGIN FUNCTIONS ====================
+    function doLogin() {
+      if (isLoggingIn) return;
+
+      const name = $("loginName").value.trim();
+      const studentId = $("loginStudentId").value.trim();
+      const btn = $("loginBtn");
+
+      // Validation
+      if (!name) {
+        return showAlert("loginAlert", "error", "กรุณากรอกชื่อ-นามสกุล");
+      }
+      if (!studentId) {
+        return showAlert("loginAlert", "error", "กรุณากรอกรหัสนักศึกษา");
+      }
+      if (!/^\d{9}$/.test(studentId)) {
+        return showAlert(
+          "loginAlert",
+          "error",
+          "รหัสนักศึกษาต้องเป็นตัวเลข 9 หลัก"
+        );
+      }
+
+      isLoggingIn = true;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>กำลังตรวจสอบ...';
+      $("loginAlert").style.display = "none";
+
+      // Add timeout safety (15 seconds)
+      const timeoutId = setTimeout(() => {
+        isLoggingIn = false;
+        btn.disabled = false;
+        btn.innerHTML = "เข้าสู่ระบบ";
+        showAlert(
+          "loginAlert",
+          "error",
+          "หมดเวลาการตรวจสอบ กรุณาลองใหม่"
+        );
+      }, 15000);
+
+      google.script.run
+        .withSuccessHandler((res) => {
+          clearTimeout(timeoutId);
+          handleLoginSuccess(res, btn);
+        })
+        .withFailureHandler((err) => {
+          clearTimeout(timeoutId);
+          handleLoginError(err, btn);
+        })
+        .login(studentId, name);
+    }
+
+    function handleLoginSuccess(res, btn) {
+      isLoggingIn = false;
+      btn.disabled = false;
+      btn.innerHTML = "เข้าสู่ระบบ";
+
+      if (!res || !res.success) {
+        showAlert("loginAlert", "error", res?.message || "เกิดข้อผิดพลาด");
+        return;
+      }
+
+      currentUser = {
+        studentId: res.studentId,
+        name: res.name,
+      };
+      currentBooking = res.booking || null;
+
+      $("loginOverlay").classList.remove("active");
+      $("heroName").textContent = res.name;
+      $("heroId").textContent = res.studentId;
+
+      currentBooking ? showHomePage() : showBookingPage();
+    }
+
+    function handleLoginError(err, btn) {
+      isLoggingIn = false;
+      btn.disabled = false;
+      btn.innerHTML = "เข้าสู่ระบบ";
+      showAlert(
+        "loginAlert",
+        "error",
+        `เกิดข้อผิดพลาด: ${err?.message || "ไม่สามารถเชื่อมต่อระบบได้"}`
+      );
+    }
+
+    // ==================== PAGE DISPLAY ====================
+    function showHomePage() {
+      $("homePage").style.display = "block";
+      $("bookingPage").style.display = "none";
+      $("sidebarInfo").style.display = "none";
+
+      if (!currentBooking) return;
+
+      const b = currentBooking;
+      $("homeName").textContent = b.name || "-";
+      $("homeStudentId").textContent = `รหัส: ${b.studentId || "-"}`;
+      $("homeEmoji").textContent = b.emoji || "🛏️";
+      $("homeRoom").textContent = b.roomLabel || "-";
+      $("homeType").textContent =
+        b.type === "2person" ? "ห้อง 2 คน" : "ห้อง 4 คน";
+      $("homeDetailName").textContent = b.name || "-";
+      $("homeDetailId").textContent = b.studentId || "-";
+      $("homeDate").textContent = formatDate(b.timestamp);
+    }
+
+    function showBookingPage() {
+      $("homePage").style.display = "none";
+      $("bookingPage").style.display = "block";
+      $("sidebarInfo").style.display = "block";
+
+      selectedType = null;
+      selectedRoom = null;
+      resetTypeSelection();
+
+      $("roomsContainer").innerHTML = "";
+      $("summaryEmoji").textContent = "🛏️";
+      $("summaryRoom").textContent = "-";
+      $("summaryType").textContent = "-";
+      $("summaryName").textContent = currentUser?.name || "-";
+      $("summaryId").textContent = currentUser?.studentId || "-";
+      $("bookingAlert").style.display = "none";
+
+      goStep(1);
+    }
+
+    // ==================== STEP NAVIGATION ====================
+    function goStep(step) {
+      ["step1", "step2", "step3"].forEach((id, i) => {
+        $(id).style.display = step === i + 1 ? "block" : "none";
+      });
+
+      for (let i = 1; i <= 3; i++) {
+        const dot = $(`dot${i}`);
+        const line = $(`line${i}`);
+
+        if (i < step) {
+          dot.className = "step-dot done";
+          dot.textContent = "✓";
+        } else if (i === step) {
+          dot.className = "step-dot active";
+          dot.textContent = i;
+        } else {
+          dot.className = "step-dot";
+          dot.textContent = i;
+        }
+
+        if (line) {
+          line.className = i < step ? "step-line done" : "step-line";
+        }
+      }
+
+      // Clear alert
+      $("bookingAlert").style.display = "none";
+    }
+
+    // ==================== TYPE SELECTION ====================
+    function resetTypeSelection() {
+      document.querySelectorAll(".type-card").forEach((card) => {
+        card.classList.remove("selected");
+      });
+    }
+
+    function selectType(type) {
+      if (isSubmitting) return;
+
+      selectedType = type;
+      selectedRoom = null;
+
+      resetTypeSelection();
+      $(`type-${type}`).classList.add("selected");
+      $("step2Title").textContent =
+        type === "2person"
+          ? "🛏️ ห้อง 2 คน — เลือกห้อง"
+          : "🛏️ ห้อง 4 คน — เลือกห้อง";
+
+      goStep(2);
+      loadRooms(type);
+    }
+
+    // ==================== ROOM LOADING ====================
+    function loadRooms(type) {
+      const container = $("roomsContainer");
+      container.innerHTML =
+        '<div class="skeleton"></div>' +
+        '<div class="skeleton"></div>' +
+        '<div class="skeleton"></div>';
+
+      google.script.run
+        .withSuccessHandler((status) => {
+          renderRooms(status);
+        })
+        .withFailureHandler((err) => {
+          console.error("getRoomsStatus error:", err);
+          container.innerHTML =
+            '<div class="map-empty">โหลดข้อมูลห้องไม่สำเร็จ</div>';
+        })
+        .getRoomsStatus(type);
+    }
+
+    function renderRooms(status) {
+      const container = $("roomsContainer");
+      container.innerHTML = "";
+
+      if (!status || !Object.keys(status).length) {
+        container.innerHTML =
+          '<div class="map-empty">ไม่พบข้อมูลห้อง</div>';
+        return;
+      }
+
+      Object.keys(status).forEach((key) => {
+        const r = status[key];
+        const disabled = !r.available;
+        const pct = r.total > 0 ? Math.round((r.booked / r.total) * 100) : 0;
+
+        let badgeClass = "available";
+        let badgeText = `เหลือ ${r.remaining} ห้อง`;
+        let fillColor = "#1a6b5a";
+
+        if (disabled) {
+          badgeClass = "full";
+          badgeText = "เต็มแล้ว";
+          fillColor = "#dc2626";
+        } else if (r.remaining === 1) {
+          badgeClass = "almost";
+          badgeText = "เหลือ 1 ห้องสุดท้าย!";
+          fillColor = "#f59e0b";
+        }
+
+        const card = document.createElement("div");
+        card.className = `room-card${disabled ? " disabled" : ""}`;
+        card.id = `card-${key}`;
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="room-info">
+              <div class="room-emoji">${escapeHtml(r.emoji)}</div>
+              <div>
+                <div class="room-name">${escapeHtml(r.label)}</div>
+                <div class="room-sub">ทั้งหมด ${r.total} ห้อง</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+              <span class="badge ${badgeClass}">${escapeHtml(badgeText)}</span>
+              <div class="check-circle" id="check-${key}"></div>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${pct}%; background: ${fillColor};"></div>
+          </div>
+          <div class="progress-text">
+            <span>จองแล้ว ${r.booked} ห้อง</span>
+            <span>เหลือ ${r.remaining} / ${r.total}</span>
+          </div>
+        `;
+
+        if (!disabled) {
+          card.addEventListener("click", () =>
+            selectRoom(key, r.label, r.emoji)
+          );
+        }
+
+        container.appendChild(card);
+      });
+    }
+
+    // ==================== ROOM SELECTION ====================
+    function selectRoom(key, label, emoji) {
+      if (isSubmitting) return;
+
+      selectedRoom = { key, label, emoji };
+
+      document.querySelectorAll(".room-card").forEach((card) => {
+        card.classList.remove("selected");
+        const check = card.querySelector(".check-circle");
+        if (check) check.textContent = "";
+      });
+
+      const card = $(`card-${key}`);
+      const check = $(`check-${key}`);
+
+      if (card) card.classList.add("selected");
+      if (check) check.textContent = "✓";
+
+      $("summaryEmoji").textContent = emoji;
+      $("summaryRoom").textContent = label;
+      $("summaryType").textContent =
+        selectedType === "2person" ? "ห้อง 2 คน" : "ห้อง 4 คน";
+      $("summaryName").textContent = currentUser?.name || "-";
+      $("summaryId").textContent = currentUser?.studentId || "-";
+
+      setTimeout(() => goStep(3), 180);
+    }
+
+    // ==================== BOOKING CONFIRMATION ====================
+    function confirmBooking() {
+      if (isSubmitting) return;
+
+      if (!selectedRoom || !selectedType || !currentUser) {
+        showAlert("bookingAlert", "error", "กรุณาเลือกห้องก่อน");
+        goStep(2);
+        return;
+      }
+
+      isSubmitting = true;
+      const btn = $("confirmBtn");
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>กำลังจอง...';
+      $("bookingAlert").style.display = "none";
+
+      // Add timeout safety (20 seconds)
+      const timeoutId = setTimeout(() => {
+        isSubmitting = false;
+        btn.disabled = false;
+        btn.innerHTML = "✅ ยืนยันการจอง";
+        showAlert(
+          "bookingAlert",
+          "error",
+          "หมดเวลาการจอง กรุณาลองใหม่"
+        );
+        loadRooms(selectedType);
+      }, 20000);
+
+      google.script.run
+        .withSuccessHandler((res) => {
+          clearTimeout(timeoutId);
+          handleBookingSuccess(res, btn);
+        })
+        .withFailureHandler((err) => {
+          clearTimeout(timeoutId);
+          handleBookingError(err, btn);
+        })
+        .submitBooking(
+          currentUser.studentId,
+          currentUser.name,
+          selectedRoom.key,
+          selectedType
+        );
+    }
+
+    function handleBookingSuccess(res, btn) {
+      isSubmitting = false;
+      btn.disabled = false;
+      btn.innerHTML = "✅ ยืนยันการจอง";
+
+      if (!res || !res.success) {
+        showAlert("bookingAlert", "error", res?.message || "เกิดข้อผิดพลาด");
+        loadRooms(selectedType);
+        return;
+      }
+
+      currentBooking = res.booking || null;
+      showHomePage();
+      showSuccessOverlay(currentBooking?.roomLabel || "-");
+    }
+
+    function handleBookingError(err, btn) {
+      console.error("submitBooking error:", err);
+      isSubmitting = false;
+      btn.disabled = false;
+      btn.innerHTML = "✅ ยืนยันการจอง";
+      showAlert(
+        "bookingAlert",
+        "error",
+        "เกิดข้อผิดพลาด กรุณาลองใหม่"
+      );
+      loadRooms(selectedType);
+    }
+
+    // ==================== BOOKING CANCELLATION ====================
+    function askCancel() {
+      if (!currentBooking || isCancelling) return;
+      $("confirmCancelText").textContent =
+        `คุณต้องการยกเลิกการจองห้อง "${currentBooking.roomLabel || "-"}" ใช่หรือไม่?`;
+      $("confirmOverlay").classList.add("active");
+    }
+
+    function closeConfirm() {
+      $("confirmOverlay").classList.remove("active");
+    }
+
+    function doCancel() {
+      if (!currentUser || isCancelling) return;
+
+      isCancelling = true;
+      closeConfirm();
+
+      const btn = $("cancelBtn");
+      btn.disabled = true;
+      btn.innerHTML =
+        '<span class="spinner spinner-red"></span>กำลังยกเลิก...';
+
+      // Add timeout safety (20 seconds)
+      const timeoutId = setTimeout(() => {
+        isCancelling = false;
+        btn.disabled = false;
+        btn.innerHTML = "❌ ยกเลิกการจอง";
+        alert("หมดเวลาการยกเลิก กรุณาลองใหม่");
+      }, 20000);
+
+      google.script.run
+        .withSuccessHandler((res) => {
+          clearTimeout(timeoutId);
+          handleCancelSuccess(res, btn);
+        })
+        .withFailureHandler((err) => {
+          clearTimeout(timeoutId);
+          handleCancelError(err, btn);
+        })
+        .cancelBooking(currentUser.studentId);
+    }
+
+    function handleCancelSuccess(res, btn) {
+      isCancelling = false;
+      btn.disabled = false;
+      btn.innerHTML = "❌ ยกเลิกการจอง";
+
+      if (!res || !res.success) {
+        alert(res?.message || "เกิดข้อผิดพลาด");
+        return;
+      }
+
+      currentBooking = null;
+      showBookingPage();
+    }
+
+    function handleCancelError(err, btn) {
+      console.error("cancelBooking error:", err);
+      isCancelling = false;
+      btn.disabled = false;
+      btn.innerHTML = "❌ ยกเลิกการจอง";
+      alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
+    }
+
+    
+// ==================== SUCCESS OVERLAY MANAGEMENT ====================
+let successAutoCloseTimeout = null;
+let successCountdownInterval = null;
+
+// Handlers references so we can remove them safely
+let successOverlayClickHandler = null;
+let successBoxClickHandler = null;
+let successTouchHandler = null;
+let successEscHandler = null;
+
+function showSuccessOverlay(roomLabel) {
+  $("successRoom").textContent = roomLabel || "-";
+  const overlay = $("successOverlay");
+  
+  if (overlay) {
+    overlay.classList.add("active");
+    overlay.style.pointerEvents = "auto";
+  }
+  
+  // Clear existing timeouts/intervals
+  if (successAutoCloseTimeout) {
+    clearTimeout(successAutoCloseTimeout);
+    successAutoCloseTimeout = null;
+  }
+  if (successCountdownInterval) {
+    clearInterval(successCountdownInterval);
+    successCountdownInterval = null;
+  }
+
+  // Reset progress bar and animate smoothly
+  const progressBar = $("autoCloseProgress");
+  if (progressBar) {
+    // Ensure no leftover transition interfering
+    progressBar.style.transition = "none";
+    progressBar.style.width = "100%";
+
+    // Force reflow
+    void progressBar.offsetWidth;
+
+    // Now set transition and animate to 0% using rAF to ensure browser picks it up
+    progressBar.style.transition = "width 10s linear";
+
+    // Use double rAF to reliably trigger the transition
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        progressBar.style.width = "0%";
+      });
+    });
+  }
+
+  // Auto close after 10 seconds
+  successAutoCloseTimeout = setTimeout(() => {
+    closeSuccessOverlay();
+  }, 10000);
+
+  setupSuccessClickListener();
+  setupKeyboardClose();
+}
+
+function setupSuccessClickListener() {
+  const overlay = $("successOverlay");
+  const box = $("successBox");
+
+  if (!overlay) return;
+
+  // Remove previous handlers if any
+  if (successOverlayClickHandler) {
+    overlay.removeEventListener("click", successOverlayClickHandler);
+    successOverlayClickHandler = null;
+  }
+  if (successBoxClickHandler && box) {
+    box.removeEventListener("click", successBoxClickHandler);
+    successBoxClickHandler = null;
+  }
+  if (successTouchHandler) {
+    overlay.removeEventListener("touchend", successTouchHandler);
+    successTouchHandler = null;
+  }
+
+  // Click on overlay background = close (only when clicking the background)
+  successOverlayClickHandler = function(e) {
+    if (e.target === overlay) {
+      closeSuccessOverlay();
+    }
+  };
+  overlay.addEventListener("click", successOverlayClickHandler, false);
+
+  // Click on modal box = close (stop propagation is not needed here; clicking box should also close per original behavior)
+  if (box) {
+    successBoxClickHandler = function(e) {
+      e.stopPropagation();
+      closeSuccessOverlay();
+    };
+    box.addEventListener("click", successBoxClickHandler, false);
+  }
+
+  // Touch support: close on touchend
+  successTouchHandler = function(e) {
+    e.stopPropagation();
+    closeSuccessOverlay();
+  };
+  overlay.addEventListener("touchend", successTouchHandler, false);
+}
+
+function setupKeyboardClose() {
+  // Remove previous ESC handler if any
+  if (successEscHandler) {
+    document.removeEventListener("keydown", successEscHandler);
+    successEscHandler = null;
+  }
+
+  successEscHandler = function handleEsc(e) {
+    if (e.key === "Escape") {
+      closeSuccessOverlay();
+      // remove after triggered
+      if (successEscHandler) {
+        document.removeEventListener("keydown", successEscHandler);
+        successEscHandler = null;
+      }
+    }
+  };
+
+  document.addEventListener("keydown", successEscHandler, false);
+}
+
+function closeSuccessOverlay() {
+  // Clear timeouts/intervals
+  if (successAutoCloseTimeout) {
+    clearTimeout(successAutoCloseTimeout);
+    successAutoCloseTimeout = null;
+  }
+  if (successCountdownInterval) {
+    clearInterval(successCountdownInterval);
+    successCountdownInterval = null;
+  }
+
+  // Remove event listeners for overlay/box/touch/esc
+  const overlay = $("successOverlay");
+  const box = $("successBox");
+  if (overlay) {
+    overlay.classList.remove("active");
+    overlay.style.pointerEvents = "none";
+
+    if (successOverlayClickHandler) {
+      overlay.removeEventListener("click", successOverlayClickHandler);
+      successOverlayClickHandler = null;
+    }
+    if (successTouchHandler) {
+      overlay.removeEventListener("touchend", successTouchHandler);
+      successTouchHandler = null;
+    }
+  }
+  if (box && successBoxClickHandler) {
+    box.removeEventListener("click", successBoxClickHandler);
+    successBoxClickHandler = null;
+  }
+  if (successEscHandler) {
+    document.removeEventListener("keydown", successEscHandler);
+    successEscHandler = null;
+  }
+
+  // Reset progress bar to full (so next open starts full)
+  const progressBar = $("autoCloseProgress");
+  if (progressBar) {
+    // Remove transition so it snaps back (optional)
+    progressBar.style.transition = "none";
+    progressBar.style.width = "100%";
+    // Force reflow
+    void progressBar.offsetWidth;
+  }
+}
+    // ==================== MAP DISPLAY ====================
+    function loadMap() {
+      const container = $("mapContainer");
+      container.innerHTML =
+        '<div class="map-empty">กำลังโหลดแผนที่...</div>';
+
+      google.script.run
+        .withSuccessHandler((base64) => {
+          handleMapSuccess(base64, container);
+        })
+        .withFailureHandler((err) => {
+          console.error("getMapImageBase64 error:", err);
+          container.innerHTML =
+            '<div class="map-empty">โหลดแผนที่ไม่สำเร็จ</div>';
+        })
+        .getMapImageBase64();
+    }
+
+    function handleMapSuccess(base64, container) {
+      if (!base64) {
+        container.innerHTML = `
+          <div class="map-empty">
+            ยังไม่ได้ตั้งค่าแผนที่
+            <div style="font-size: 12px; margin-top: 6px; color: #9ca3af;">
+              ใส่ FILE ID ใน Code.gs ที่ตัวแปร MAP_IMAGE_FILE_ID
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `<img class="map-img" src="${base64}" alt="แผนที่โรงแรม">`;
+    }
+
+    // ==================== TAB NAVIGATION ====================
+    function showRoomsTab() {
+      currentTab = "rooms";
+      $("roomsPage").style.display = "block";
+      $("mapPage").style.display = "none";
+      $("tabRoomsBtn").classList.add("active");
+      $("tabMapBtn").classList.remove("active");
+    }
+
+    function showMapTab() {
+      currentTab = "map";
+      $("roomsPage").style.display = "none";
+      $("mapPage").style.display = "block";
+      $("tabRoomsBtn").classList.remove("active");
+      $("tabMapBtn").classList.add("active");
+      loadMap();
+    }
+
+    // ==================== UTILITY FUNCTIONS ====================
+    function showAlert(id, type, message) {
+      const el = $(id);
+      el.className = `alert ${type}`;
+      el.textContent = message;
+      el.style.display = "block";
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function formatDate(dateStr) {
+      try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return "-";
+
+        return d.toLocaleDateString("th-TH", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } catch {
+        return "-";
+      }
+    }
+  </script>
+</body>
+</html>
