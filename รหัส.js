@@ -31,18 +31,22 @@ const MAP_IMAGE_FILE_ID = "1uzRXK6CaT1msIed9uFWeM-WLNr2wZG7W";
 /**
  * ================== PUBLIC FUNCTIONS ==================
  */
-
 function doGet() {
   try {
-    return HtmlService.createHtmlOutputFromFile("Index")
+    return HtmlService.createTemplateFromFile("Index")  // ← เปลี่ยนตรงนี้
+      .evaluate()                                        // ← เพิ่มตรงนี้
       .setTitle("ระบบจองห้องพัก")
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   } catch (e) {
     Logger.log("doGet error: " + e.message);
-    return HtmlService.createHtmlOutput("<h1>Error</h1><p>" + e.message + "</p>");
+    return HtmlService.createHtmlOutput(
+      "<h1>Error</h1><p>" + e.message + "</p>"
+    );
   }
 }
-
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
 /**
  * User login function
  */
