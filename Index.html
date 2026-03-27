@@ -241,15 +241,15 @@
             <div id="step1">
               <div class="section-title">🏘️ เลือกประเภทห้อง</div>
               <div class="type-selector">
-                <div class="type-card" id="type-2person">
-                  <div class="type-emoji">👫</div>
-                  <div class="type-label">ห้อง 2 คน</div>
-                  <div class="type-sub">6 ประเภท</div>
+                <div class="type-card" id="type-3person">
+                  <div class="type-emoji">👨‍👩‍👦</div>
+                  <div class="type-label">ห้อง 3 คน</div>
+                  <div class="type-sub">4 ประเภท</div>
                 </div>
                 <div class="type-card" id="type-4person">
-                  <div class="type-emoji">👨‍👩‍👧‍👦</div>
-                  <div class="type-label">ห้อง 4 คน</div>
-                  <div class="type-sub">2 ประเภท</div>
+                  <div class="type-emoji">👨‍👩</div>
+                  <div class="type-label">ห้อง 2 คน</div>
+                  <div class="type-sub">3 ประเภท</div>
                 </div>
               </div>
             </div>
@@ -405,7 +405,7 @@
       $("refreshMapBtn").addEventListener("click", loadMap);
 
       // Type selection
-      $("type-2person").addEventListener("click", () => selectType("2person"));
+      $("type-3person").addEventListener("click", () => selectType("3person"));
       $("type-4person").addEventListener("click", () => selectType("4person"));
 
       // Step navigation
@@ -518,8 +518,7 @@
       $("homeStudentId").textContent = `รหัส: ${b.studentId || "-"}`;
       $("homeEmoji").textContent = b.emoji || "🛏️";
       $("homeRoom").textContent = b.roomLabel || "-";
-      $("homeType").textContent =
-        b.type === "2person" ? "ห้อง 2 คน" : "ห้อง 4 คน";
+      $("homeType").textContent = b.type === "3person" ? "ห้อง 3 คน" : "ห้อง 2 คน";
       $("homeDetailName").textContent = b.name || "-";
       $("homeDetailId").textContent = b.studentId || "-";
       $("homeDate").textContent = formatDate(b.timestamp);
@@ -591,9 +590,9 @@
       resetTypeSelection();
       $(`type-${type}`).classList.add("selected");
       $("step2Title").textContent =
-        type === "2person"
-          ? "🛏️ ห้อง 2 คน — เลือกห้อง"
-          : "🛏️ ห้อง 4 คน — เลือกห้อง";
+        type === "3person"
+          ? "🛏️ ห้อง 3 คน — เลือกห้อง"
+          : "🛏️ ห้อง 2 คน — เลือกห้อง";
 
       goStep(2);
       loadRooms(type);
@@ -705,7 +704,7 @@
       $("summaryEmoji").textContent = emoji;
       $("summaryRoom").textContent = label;
       $("summaryType").textContent =
-        selectedType === "2person" ? "ห้อง 2 คน" : "ห้อง 4 คน";
+        selectedType === "3person" ? "ห้อง 3 คน" : "ห้อง 2 คน";
       $("summaryName").textContent = currentUser?.name || "-";
       $("summaryId").textContent = currentUser?.studentId || "-";
 

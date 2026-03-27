@@ -4,24 +4,23 @@
  */
 
 const ROOMS_CONFIG = {
-  "2person": {
-    label: "ห้อง 2 คน",
-    sheet: "2person",
+  "3person": {
+    label: "ห้อง 3 คน",
+    sheet: "3person",
     rooms: {
-      "gardenpino": { label: "Garden Pino", total: 3, emoji: "🌺" },
-      "beachnest": { label: "Beach Nest", total: 2, emoji: "🏖️" },
+      "beachneat": { label: "Beach Nest", total: 2, emoji: "🏖️" },
       "gardennest": { label: "Garden Nest", total: 8, emoji: "🌿" },
-      "cococube": { label: "Coco Cube", total: 10, emoji: "🥥" },
-      "superiongarden": { label: "Superion Garden", total: 4, emoji: "🌳" },
-      "standard": { label: "Standard", total: 8, emoji: "🛏️" }
+      "cococube": { label: "Coco Cube", total: 5, emoji: "🥥" },
+      "superior": { label: "Superior", total: 2, emoji: "🛏️" }
     }
   },
   "4person": {
-    label: "ห้อง 4 คน",
-    sheet: "4person",
+    label: "ห้อง 2 คน",
+    sheet: "2person",
     rooms: {
-      "seafront": { label: "Seafront", total: 6, emoji: "🌊" },
-      "gardennestconnect": { label: "Gardennest Connect", total: 2, emoji: "🌴" }
+      "superior": { label: "Superior", total: 6, emoji: "🛏️" },
+      "superiongarden": { label: "Superion Garden", total: 3, emoji: "🌳" },
+      "standard": { label: "Standard", total: 8, emoji: "🧺" }
     }
   }
 };
