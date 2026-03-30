@@ -1,1065 +1,563 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>จองห้องพัก - Mudchim RxSU38</title>
-   <?!= include('style'); ?>
+  <?!= include('style'); ?>
 </head>
 <body>
-  <!-- ==================== LOGIN MODAL ==================== -->
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+  <div class="ambient ambient-c"></div>
+
   <div class="overlay active" id="loginOverlay">
-    <div class="login-box">
-      <div style="font-size: 46px; margin-bottom: 10px">🏨</div>
-      <h2
-        style="
-          font-size: 21px;
-          font-weight: 900;
-          color: var(--green);
-          margin-bottom: 4px;
-        "
-      >
-        จองห้องพัก
-      </h2>
-      <div style="font-size: 11px; color: var(--green); font-weight: 700; margin-bottom: 16px;">
-        Mudchim RxSU38
-      </div>
-      <div class="subtitle">กรุณาเข้าสู่ระบบเพื่อดำเนินการ</div>
+    <div class="glass-modal login-box">
+      <div class="modal-badge">Mudchim RxSU38</div>
+      <div class="modal-icon">🏝️</div>
+      <h2>เข้าสู่ระบบจองห้องพัก</h2>
+      <p class="subtitle">กรอกชื่อและรหัสนักศึกษาเพื่อเริ่มเลือกห้องพักในรอบของคุณ</p>
 
       <div class="input-group">
-        <label>👤 ชื่อ-นามสกุล</label>
-        <input
-          type="text"
-          id="loginName"
-          placeholder="กรอกชื่อ-นามสกุล"
-          autocomplete="off"
-        />
+        <label for="loginName">ชื่อ - นามสกุล</label>
+        <input type="text" id="loginName" placeholder="กรอกชื่อ - นามสกุล" autocomplete="off" />
       </div>
+
       <div class="input-group">
-        <label>🎓 รหัสนักศึกษา (9 หลัก)</label>
-        <input
-          type="text"
-          id="loginStudentId"
-          placeholder="เช่น 660810XXX"
-          maxlength="9"
-          autocomplete="off"
-        />
+        <label for="loginStudentId">รหัสนักศึกษา 9 หลัก</label>
+        <input type="text" id="loginStudentId" placeholder="เช่น 660810123" maxlength="9" autocomplete="off" />
       </div>
 
       <div class="alert" id="loginAlert"></div>
       <button class="btn btn-primary" id="loginBtn">เข้าสู่ระบบ</button>
-      <div style="font-size: 11px; color: #bbb; margin-top: 14px">
-        by ฝ่ายโสต Mudchim RxSU38
-      </div>
+      <div class="credit">by ฝ่ายโสต Mudchim RxSU38</div>
     </div>
   </div>
-    <!-- ==================== SUCCESS MODAL ==================== -->
+
   <div class="success-overlay" id="successOverlay">
-    <div class="success-box" id="successBox">
-      <div style="font-size: 56px; margin-bottom: 10px">🎉</div>
-      <div
-        style="
-          font-size: 20px;
-          font-weight: 900;
-          color: var(--green);
-          margin-bottom: 6px;
-        "
-      >
-        จองสำเร็จ!
-      </div>
-      <div style="font-size: 15px; color: #555">
-        ห้อง <strong id="successRoom">-</strong>
-      </div>
-      <div class="success-tagline">✨ Midway moment, still growing ✨</div>
-      
-      <!-- Progress Bar เพิ่มด้านล่าง -->
-      <div style="
-        margin-top: 20px;
-        height: 3px;
-        background: #e5e7eb;
-        border-radius: 999px;
-        overflow: hidden;
-      ">
-        <div id="autoCloseProgress" style="
-          height: 100%;
-          background: linear-gradient(90deg, var(--green), #0d3d2e);
-          width: 100%;
-          border-radius: 999px;
-        "></div>
-      </div>
-      
-      <div style="
-        margin-top: 16px;
-        padding-top: 14px;
-        border-top: 1px solid #e5e7eb;
-        font-size: 12px;
-        color: #9ca3af;
-        font-weight: 600;
-      ">
-        ⬇️ แตะเพื่อปิด
-    
-      </div>
+    <div class="glass-modal success-box" id="successBox">
+      <div class="modal-icon">🎉</div>
+      <h3>จองสำเร็จแล้ว</h3>
+      <p class="success-room">ห้อง <strong id="successRoom">-</strong></p>
+      <p class="success-note">แตะที่การ์ดนี้หรือรอให้ระบบปิดอัตโนมัติ</p>
+      <div class="success-progress"><div id="autoCloseProgress"></div></div>
     </div>
   </div>
 
-  <!-- ==================== CONFIRM MODAL ==================== -->
   <div class="confirm-overlay" id="confirmOverlay">
-    <div class="confirm-box">
-      <div style="font-size: 40px; margin-bottom: 10px">⚠️</div>
-      <h3
-        style="
-          font-size: 18px;
-          font-weight: 900;
-          color: var(--danger);
-          margin-bottom: 8px;
-        "
-      >
-        ยืนยันการยกเลิก?
-      </h3>
-      <p
-        id="confirmCancelText"
-        style="font-size: 14px; color: #555; margin-bottom: 24px"
-      >
-        คุณต้องการยกเลิกการจองนี้ใช่ไหม?
-      </p>
-      <div style="display: flex; gap: 10px">
-        <button
-          class="btn"
-          id="confirmNoBtn"
-          style="background: #f3f4f6; color: #111827"
-        >
-          ไม่ใช่
-        </button>
-        <button
-          class="btn"
-          id="confirmYesBtn"
-          style="background: var(--danger); color: #fff"
-        >
-          ยืนยัน
-        </button>
+    <div class="glass-modal confirm-box">
+      <div class="modal-icon">⚠️</div>
+      <h3>ยืนยันการยกเลิก</h3>
+      <p class="subtitle" id="confirmCancelText">คุณต้องการยกเลิกการจองนี้ใช่หรือไม่</p>
+      <div class="confirm-actions">
+        <button class="btn btn-secondary" id="confirmNoBtn">ไม่ใช่</button>
+        <button class="btn btn-danger" id="confirmYesBtn">ยืนยัน</button>
       </div>
     </div>
   </div>
 
-  <!-- ==================== HERO SECTION ==================== -->
-   <div class="hero">
-    <div style="font-size: 40px">🏨</div>
-    <h1>ระบบจองห้องพัก</h1>
-    <div class="hero-project">Mudchim RxSU38</div>
-    <div style="
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      margin-top: 10px;
-      padding: 8px 16px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 8px;
-      width: fit-content;
-      margin-left: auto;
-      margin-right: auto;
-    ">
-      <div id="heroName" style="font-size: 14px; font-weight: 700; color: #fff;"></div>
-      <span style="width: 1px; height: 20px; background: rgba(255,255,255,0.3);"></span>
-      <div id="heroId" style="font-size: 14px; font-weight: 700; color: #fff;"></div>
+  <div class="floating-alert" id="floatingAlert"></div>
+
+  <header class="hero">
+    <div class="hero-mark">🏝️</div>
+    <div class="hero-copy">
+      <div class="hero-badge">Mudchim RxSU38</div>
+      <h1>ระบบจองห้องพัก</h1>
+      <p>เลือกจำนวนคนก่อน แล้วระบบจะพาไปเลือกประเภทห้องที่ตรงกับรอบของคุณ</p>
     </div>
-    <div class="hero-sub">by ฝ่ายโสต Mudchim RxSU38</div>
-  </div>
+    <div class="hero-user-pill">
+      <div class="hero-user-name" id="heroName">-</div>
+      <div class="hero-user-id" id="heroId">-</div>
+    </div>
+  </header>
 
-  <!-- ==================== MAIN CONTENT ==================== -->
-  <div class="container">
-    <!-- ==================== LEFT COLUMN (MAIN) - CENTERED ==================== -->
-    <div style="max-width: 700px; margin: 0 auto; width: 100%">
-      <!-- ==================== HOME PAGE (MY BOOKING) ==================== -->
-      <div id="homePage" style="display: none">
-        <div class="card" style="padding: 0; overflow: hidden">
-          <div class="user-card">
-            <div class="user-avatar">👤</div>
-            <div>
-              <div class="user-name" id="homeName">-</div>
-              <div class="user-id" id="homeStudentId">-</div>
-            </div>
-          </div>
-
-          <div style="padding: 16px 16px 18px">
-            <div
-              style="
-                font-size: 14px;
-                font-weight: 800;
-                color: var(--green);
-                margin-bottom: 10px;
-              "
-            >
-              🛏️ ห้องที่จองไว้
-            </div>
-
-            <div class="booking-card">
-              <div class="bc-header">
-                <div class="bc-icon" id="homeEmoji">🛏️</div>
-                <div>
-                  <div class="bc-label">ประเภทห้อง</div>
-                  <div class="bc-room" id="homeRoom">-</div>
-                  <div class="bc-type" id="homeType">-</div>
-                </div>
-              </div>
-              <div class="bc-detail">
-                <div>👤 <span id="homeDetailName">-</span></div>
-                <div style="margin-top: 4px">🎓 <span id="homeDetailId">-</span></div>
-                <div style="margin-top: 4px; font-size: 12px; color: #9ca3af">
-                  🕐 <span id="homeDate">-</span>
-                </div>
-              </div>
-            </div>
-
-            <button class="btn btn-outline" id="cancelBtn">
-              ❌ ยกเลิกการจอง
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ==================== BOOKING PAGE ==================== -->
-      <div id="bookingPage" style="display: none">
-        <div class="top-tabs">
-          <button class="tab-btn active" id="tabRoomsBtn">
-            🛏️ ห้องพัก
-          </button>
-          <button class="tab-btn" id="tabMapBtn">🗺️ แผนที่</button>
-        </div>
-
-        <div id="roomsPage">
-          <div class="card">
-            <div class="step-indicator">
-              <div class="step-dot active" id="dot1">1</div>
-              <div class="step-line" id="line1"></div>
-              <div class="step-dot" id="dot2">2</div>
-              <div class="step-line" id="line2"></div>
-              <div class="step-dot" id="dot3">3</div>
-            </div>
-
-            <!-- STEP 1: Select Type -->
-            <div id="step1">
-              <div class="section-title">🏘️ เลือกประเภทห้อง</div>
-              <div class="type-selector">
-                <div class="type-card" id="type-3person">
-                  <div class="type-emoji">👨‍👩‍👦</div>
-                  <div class="type-label">ห้อง 3 คน</div>
-                  <div class="type-sub">4 ประเภท</div>
-                </div>
-                <div class="type-card" id="type-4person">
-                  <div class="type-emoji">👨‍👩</div>
-                  <div class="type-label">ห้อง 2 คน</div>
-                  <div class="type-sub">3 ประเภท</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- STEP 2: Select Room -->
-            <div id="step2" style="display: none">
-              <button class="btn-back" id="backBtn2">← กลับ</button>
-              <div class="section-title" id="step2Title">
-                🏘️ เลือกห้อง
-              </div>
-              <div id="roomsContainer"></div>
-            </div>
-
-            <!-- STEP 3: Confirm Booking -->
-            <div id="step3" style="display: none">
-              <button class="btn-back" id="backBtn3">← กลับ</button>
-              <div class="section-title">✅ ยืนยันการจอง</div>
-
-              <div class="summary-card">
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    gap: 14px;
-                    margin-bottom: 12px;
-                  "
-                >
-                  <div style="font-size: 36px" id="summaryEmoji">🛏️</div>
-                  <div>
-                    <div class="s-label">ห้องที่เลือก</div>
-                    <div class="s-room" id="summaryRoom">-</div>
-                    <div class="s-info" id="summaryType">-</div>
-                  </div>
-                </div>
-                <div
-                  style="border-top: 1px solid #d8eee5; padding-top: 12px"
-                >
-                  <div class="s-label">ผู้จอง</div>
-                  <div style="font-size: 14px; font-weight: 800" id="summaryName">
-                    -
-                  </div>
-                  <div
-                    style="
-                      font-size: 13px;
-                      color: #6b7280;
-                      margin-top: 2px;
-                    "
-                    id="summaryId"
-                  >
-                    -
-                  </div>
-                </div>
-              </div>
-
-              <div class="alert" id="bookingAlert"></div>
-              <button class="btn btn-primary" id="confirmBtn">
-                ✅ ยืนยันการจอง
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ==================== MAP PAGE ==================== -->
-        <div id="mapPage" style="display: none">
-          <div class="map-card">
-            <div class="map-head">
-              <span>🗺️ แผนที่โรงแรม</span>
-              <button
-                class="btn-back"
-                id="refreshMapBtn"
-                style="margin: 0; padding: 6px 12px; font-size: 12px"
-              >
-                🔄 รีเฟรช
-              </button>
-            </div>
-            <div class="map-wrap" id="mapContainer">
-              <div class="map-empty">กำลังโหลดแผนที่...</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ==================== SIDEBAR INFO - BOTTOM ==================== -->
-      <div id="sidebarInfo" style="display: none">
-        <div class="card">
+  <main class="container">
+    <section id="homePage" class="page-section" style="display:none">
+      <div class="card">
+        <div class="user-card">
+          <div class="user-avatar">👤</div>
           <div>
-            <div>ℹ️</div>
-            <div>ข้อมูลการจอง</div>
+            <div class="user-name" id="homeName">-</div>
+            <div class="user-id" id="homeStudentId">-</div>
+          </div>
+        </div>
+
+        <div class="section-header compact">
+          <div class="section-title">ห้องที่จองไว้</div>
+          <div class="section-copy">หากต้องการเปลี่ยนห้อง ให้ยกเลิกรายการเดิมก่อนแล้วจองใหม่</div>
+        </div>
+
+        <div class="booking-card">
+          <div class="booking-card-top">
+            <div class="booking-icon" id="homeEmoji">🛏️</div>
             <div>
-              <p>✓ เลือกประเภทห้อง</p>
-              <p>✓ เลือกห้องที่ต้องการ</p>
-              <p>✓ ยืนยันการจอง</p>
-              <p style="font-size: 11px; color: #9ca3af; margin-top: 12px">
-                หากมีคำถาม กรุณาติดต่อฝ่ายโสต
-              </p>
+              <div class="summary-label">ประเภทห้อง</div>
+              <div class="booking-room" id="homeRoom">-</div>
+              <div class="booking-type" id="homeType">-</div>
             </div>
+          </div>
+          <div class="booking-meta">
+            <div><span class="summary-label">ชื่อผู้จอง</span><span id="homeDetailName">-</span></div>
+            <div><span class="summary-label">รหัสนักศึกษา</span><span id="homeDetailId">-</span></div>
+            <div><span class="summary-label">เวลาที่จอง</span><span id="homeDate">-</span></div>
+          </div>
+        </div>
+
+        <button class="btn btn-outline" id="cancelBtn">ยกเลิกการจอง</button>
+      </div>
+    </section>
+
+    <section id="bookingPage" class="page-section" style="display:none">
+      <div class="top-tabs">
+        <button class="tab-btn active" id="tabRoomsBtn">ห้องพัก</button>
+        <button class="tab-btn" id="tabMapBtn">แผนที่</button>
+      </div>
+
+      <div id="roomsPage">
+        <div class="card booking-shell">
+          <div class="step-indicator">
+            <div class="step-dot active" id="dot1">1</div>
+            <div class="step-line" id="line1"></div>
+            <div class="step-dot" id="dot2">2</div>
+            <div class="step-line" id="line2"></div>
+            <div class="step-dot" id="dot3">3</div>
+          </div>
+
+          <div id="step1" class="step-panel">
+            <div class="section-header">
+              <div class="section-title">Step 1 เลือกจำนวนคน</div>
+              <div class="section-copy">เริ่มจากจำนวนผู้เข้าพักในห้องก่อน จากนั้นระบบจะพาไปเลือกประเภทห้องที่มีให้ในจำนวนนั้น</div>
+            </div>
+            <div class="type-selector" id="typeSelector"></div>
+          </div>
+
+          <div id="step2" class="step-panel" style="display:none">
+            <div class="step-toolbar">
+              <button class="btn-back" id="backBtn2">ย้อนกลับ</button>
+              <div class="step-chip" id="selectedTypeChip">-</div>
+            </div>
+            <div class="section-header">
+              <div class="section-title" id="step2Title">Step 2 เลือกประเภทห้อง</div>
+              <div class="section-copy">เลือกประเภทห้องที่ต้องการ ระบบจะแสดงจำนวนห้องคงเหลือแบบเรียลไทม์ก่อนยืนยัน</div>
+            </div>
+            <div class="room-stats" id="roomStats"></div>
+            <div class="rooms-grid" id="roomsContainer"></div>
+          </div>
+
+          <div id="step3" class="step-panel" style="display:none">
+            <button class="btn-back" id="backBtn3">ย้อนกลับ</button>
+            <div class="section-header">
+              <div class="section-title">Step 3 ยืนยันการจอง</div>
+              <div class="section-copy">ตรวจสอบรายละเอียดให้เรียบร้อยก่อนกดยืนยันการจอง</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-top">
+                <div class="summary-emoji" id="summaryEmoji">🛏️</div>
+                <div>
+                  <div class="summary-label">ประเภทห้องที่เลือก</div>
+                  <div class="summary-room" id="summaryRoom">-</div>
+                  <div class="summary-type" id="summaryType">-</div>
+                </div>
+              </div>
+              <div class="summary-grid">
+                <div class="summary-row"><span class="summary-label">ชื่อผู้จอง</span><span class="summary-value" id="summaryName">-</span></div>
+                <div class="summary-row"><span class="summary-label">รหัสนักศึกษา</span><span class="summary-value" id="summaryId">-</span></div>
+              </div>
+            </div>
+            <div class="alert" id="bookingAlert"></div>
+            <button class="btn btn-primary" id="confirmBtn">ยืนยันการจอง</button>
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- ==================== JAVASCRIPT ==================== -->
+      <div id="mapPage" style="display:none">
+        <div class="map-card">
+          <div class="map-head">
+            <div>
+              <div class="section-title no-line">แผนที่ห้องพัก</div>
+              <div class="section-copy">รีเฟรชได้ทุกครั้งหากมีการอัปเดตแผนผัง</div>
+            </div>
+            <button class="btn btn-secondary map-refresh" id="refreshMapBtn">รีเฟรช</button>
+          </div>
+          <div class="map-wrap" id="mapContainer"><div class="map-empty">กำลังโหลดแผนที่...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sidebarInfo" class="page-section" style="display:none">
+      <div class="card info-card">
+        <div class="section-header compact">
+          <div class="section-title">คู่มือการจอง</div>
+          <div class="section-copy">เลือกจำนวนคน เลือกประเภทห้อง แล้วกดยืนยันเพียงครั้งเดียวต่อคน</div>
+        </div>
+        <div class="info-grid">
+          <div class="info-item">1. เลือกจำนวนผู้เข้าพักให้ตรงกับแผนของกลุ่ม</div>
+          <div class="info-item">2. ตรวจสอบจำนวนห้องคงเหลือก่อนเลือก</div>
+          <div class="info-item">3. เมื่อจองแล้ว ระบบจะล็อก 1 รายการต่อ 1 รหัสนักศึกษา</div>
+        </div>
+        <div class="capacity-strip" id="capacityStrip"></div>
+      </div>
+    </section>
+  </main>
+
   <script>
-    /**
-     * ROOM BOOKING SYSTEM - Frontend
-     * Optimized version with improved error handling
-     */
-
-    // ==================== UTILITIES ====================
+    const ROOM_CATALOG = Object.freeze(<?!= roomCatalogJson ?>);
     const $ = (id) => document.getElementById(id);
+    const state = { currentUser: null, currentBooking: null, selectedType: null, selectedRoom: null, currentTab: "rooms", isLoggingIn: false, isSubmitting: false, isCancelling: false, roomRequestToken: 0, successTimer: null, toastTimer: null };
 
-    // ==================== STATE MANAGEMENT ====================
-    let currentUser = null;
-    let currentBooking = null;
-    let selectedType = null;
-    let selectedRoom = null;
-    let currentTab = "rooms";
+    document.addEventListener("DOMContentLoaded", initializeApp);
 
-    let isSubmitting = false;
-    let isCancelling = false;
-    let isLoggingIn = false;
-
-    // ==================== INITIALIZATION ====================
-    window.addEventListener("load", () => {
-      initializeEventListeners();
+    function initializeApp() {
+      renderTypeSelector();
+      renderCapacityStrip();
+      bindEvents();
       loadMap();
       showRoomsTab();
-    });
+      goStep(1);
+    }
 
-    function initializeEventListeners() {
-      // Tab buttons
+    function bindEvents() {
       $("tabRoomsBtn").addEventListener("click", showRoomsTab);
       $("tabMapBtn").addEventListener("click", showMapTab);
-
-      // Login form
       $("loginBtn").addEventListener("click", doLogin);
-      $("loginName").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") doLogin();
-      });
-      $("loginStudentId").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") doLogin();
-      });
-      $("loginStudentId").addEventListener("input", (e) => {
-        e.target.value = e.target.value.replace(/\D/g, "");
-      });
-
-      // Booking management
       $("cancelBtn").addEventListener("click", askCancel);
       $("confirmBtn").addEventListener("click", confirmBooking);
       $("confirmNoBtn").addEventListener("click", closeConfirm);
       $("confirmYesBtn").addEventListener("click", doCancel);
       $("refreshMapBtn").addEventListener("click", loadMap);
-
-      // Type selection
-      $("type-3person").addEventListener("click", () => selectType("3person"));
-      $("type-4person").addEventListener("click", () => selectType("4person"));
-
-      // Step navigation
-      $("backBtn2").addEventListener("click", () => {
-        resetTypeSelection();
-        selectedType = null;
-        selectedRoom = null;
-        goStep(1);
-      });
-
+      $("backBtn2").addEventListener("click", resetBookingFlow);
       $("backBtn3").addEventListener("click", () => goStep(2));
+      $("loginName").addEventListener("keydown", handleLoginEnter);
+      $("loginStudentId").addEventListener("keydown", handleLoginEnter);
+      $("loginStudentId").addEventListener("input", (event) => { event.target.value = event.target.value.replace(/\D/g, ""); });
+      $("confirmOverlay").addEventListener("click", (event) => { if (event.target === $("confirmOverlay")) closeConfirm(); });
+      $("successOverlay").addEventListener("click", (event) => { if (event.target === $("successOverlay")) closeSuccessOverlay(); });
+      $("successBox").addEventListener("click", closeSuccessOverlay);
+      document.addEventListener("keydown", (event) => { if (event.key === "Escape") { closeConfirm(); closeSuccessOverlay(); } });
     }
 
-    // ==================== LOGIN FUNCTIONS ====================
-    function doLogin() {
-      if (isLoggingIn) return;
+    function handleLoginEnter(event) { if (event.key === "Enter") doLogin(); }
 
+    function renderTypeSelector() {
+      const container = $("typeSelector");
+      container.innerHTML = "";
+      ROOM_CATALOG.forEach((type) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "type-card";
+        button.id = `type-${type.key}`;
+        button.style.setProperty("--card-accent", type.accent);
+        button.innerHTML = `<div class="type-card-head"><div class="type-emoji">${escapeHtml(type.emoji)}</div><div class="type-badge">${type.capacity} คน</div></div><div class="type-label">${escapeHtml(type.label)}</div><div class="type-meta">${type.roomTypeCount} ประเภท • ${type.totalInventory} ห้อง</div><div class="type-preview">${escapeHtml(type.rooms.map((room) => room.label).join(" • "))}</div>`;
+        button.addEventListener("click", () => selectType(type.key));
+        container.appendChild(button);
+      });
+    }
+
+    function renderCapacityStrip() {
+      const container = $("capacityStrip");
+      container.innerHTML = ROOM_CATALOG.map((type) => `<div class="capacity-pill" style="--pill-accent:${type.accent}"><span>${escapeHtml(type.label)}</span><strong>${type.totalInventory} ห้อง</strong></div>`).join("");
+    }
+
+    function doLogin() {
+      if (state.isLoggingIn) return;
       const name = $("loginName").value.trim();
       const studentId = $("loginStudentId").value.trim();
-      const btn = $("loginBtn");
-
-      // Validation
-      if (!name) {
-        return showAlert("loginAlert", "error", "กรุณากรอกชื่อ-นามสกุล");
-      }
-      if (!studentId) {
-        return showAlert("loginAlert", "error", "กรุณากรอกรหัสนักศึกษา");
-      }
-      if (!/^\d{9}$/.test(studentId)) {
-        return showAlert(
-          "loginAlert",
-          "error",
-          "รหัสนักศึกษาต้องเป็นตัวเลข 9 หลัก"
-        );
-      }
-
-      isLoggingIn = true;
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span>กำลังตรวจสอบ...';
-      $("loginAlert").style.display = "none";
-
-      // Add timeout safety (15 seconds)
+      if (!name) return showInlineAlert("loginAlert", "error", "กรุณากรอกชื่อ - นามสกุล");
+      if (!/^\d{9}$/.test(studentId)) return showInlineAlert("loginAlert", "error", "รหัสนักศึกษาต้องเป็นตัวเลข 9 หลัก");
+      state.isLoggingIn = true;
+      setButtonBusy($("loginBtn"), true, "เข้าสู่ระบบ", "กำลังตรวจสอบ...");
+      hideInlineAlert("loginAlert");
       const timeoutId = setTimeout(() => {
-        isLoggingIn = false;
-        btn.disabled = false;
-        btn.innerHTML = "เข้าสู่ระบบ";
-        showAlert(
-          "loginAlert",
-          "error",
-          "หมดเวลาการตรวจสอบ กรุณาลองใหม่"
-        );
+        state.isLoggingIn = false;
+        setButtonBusy($("loginBtn"), false, "เข้าสู่ระบบ");
+        showInlineAlert("loginAlert", "error", "ใช้เวลาตรวจสอบนานเกินไป กรุณาลองใหม่");
       }, 15000);
-
-      google.script.run
-        .withSuccessHandler((res) => {
-          clearTimeout(timeoutId);
-          handleLoginSuccess(res, btn);
-        })
-        .withFailureHandler((err) => {
-          clearTimeout(timeoutId);
-          handleLoginError(err, btn);
-        })
-        .login(studentId, name);
+      google.script.run.withSuccessHandler((response) => { clearTimeout(timeoutId); handleLoginSuccess(response); }).withFailureHandler((error) => { clearTimeout(timeoutId); handleLoginFailure(error); }).login(studentId, name);
     }
 
-    function handleLoginSuccess(res, btn) {
-      isLoggingIn = false;
-      btn.disabled = false;
-      btn.innerHTML = "เข้าสู่ระบบ";
-
-      if (!res || !res.success) {
-        showAlert("loginAlert", "error", res?.message || "เกิดข้อผิดพลาด");
-        return;
-      }
-
-      currentUser = {
-        studentId: res.studentId,
-        name: res.name,
-      };
-      currentBooking = res.booking || null;
-
+    function handleLoginSuccess(response) {
+      state.isLoggingIn = false;
+      setButtonBusy($("loginBtn"), false, "เข้าสู่ระบบ");
+      if (!response || !response.success) return showInlineAlert("loginAlert", "error", response?.message || "เข้าสู่ระบบไม่สำเร็จ");
+      state.currentUser = { name: response.name, studentId: response.studentId };
+      state.currentBooking = response.booking || null;
+      $("heroName").textContent = response.name || "-";
+      $("heroId").textContent = response.studentId || "-";
       $("loginOverlay").classList.remove("active");
-      $("heroName").textContent = res.name;
-      $("heroId").textContent = res.studentId;
-
-      currentBooking ? showHomePage() : showBookingPage();
+      state.currentBooking ? showHomePage() : showBookingPage();
     }
 
-    function handleLoginError(err, btn) {
-      isLoggingIn = false;
-      btn.disabled = false;
-      btn.innerHTML = "เข้าสู่ระบบ";
-      showAlert(
-        "loginAlert",
-        "error",
-        `เกิดข้อผิดพลาด: ${err?.message || "ไม่สามารถเชื่อมต่อระบบได้"}`
-      );
+    function handleLoginFailure(error) {
+      state.isLoggingIn = false;
+      setButtonBusy($("loginBtn"), false, "เข้าสู่ระบบ");
+      showInlineAlert("loginAlert", "error", error?.message || "เชื่อมต่อระบบไม่สำเร็จ");
     }
 
-    // ==================== PAGE DISPLAY ====================
     function showHomePage() {
       $("homePage").style.display = "block";
       $("bookingPage").style.display = "none";
       $("sidebarInfo").style.display = "none";
-
-      if (!currentBooking) return;
-
-      const b = currentBooking;
-      $("homeName").textContent = b.name || "-";
-      $("homeStudentId").textContent = `รหัส: ${b.studentId || "-"}`;
-      $("homeEmoji").textContent = b.emoji || "🛏️";
-      $("homeRoom").textContent = b.roomLabel || "-";
-      $("homeType").textContent = b.type === "3person" ? "ห้อง 3 คน" : "ห้อง 2 คน";
-      $("homeDetailName").textContent = b.name || "-";
-      $("homeDetailId").textContent = b.studentId || "-";
-      $("homeDate").textContent = formatDate(b.timestamp);
+      const booking = state.currentBooking;
+      if (!booking) return;
+      $("homeName").textContent = booking.name || "-";
+      $("homeStudentId").textContent = `รหัส: ${booking.studentId || "-"}`;
+      $("homeEmoji").textContent = booking.emoji || "🛏️";
+      $("homeRoom").textContent = booking.roomLabel || "-";
+      $("homeType").textContent = booking.typeLabel || getTypeLabel(booking.type);
+      $("homeDetailName").textContent = booking.name || "-";
+      $("homeDetailId").textContent = booking.studentId || "-";
+      $("homeDate").textContent = formatDate(booking.timestamp);
     }
 
     function showBookingPage() {
       $("homePage").style.display = "none";
       $("bookingPage").style.display = "block";
       $("sidebarInfo").style.display = "block";
+      resetBookingFlow();
+      $("summaryName").textContent = state.currentUser?.name || "-";
+      $("summaryId").textContent = state.currentUser?.studentId || "-";
+    }
 
-      selectedType = null;
-      selectedRoom = null;
-      resetTypeSelection();
-
+    function resetBookingFlow() {
+      state.selectedType = null;
+      state.selectedRoom = null;
       $("roomsContainer").innerHTML = "";
+      $("roomStats").innerHTML = "";
+      $("selectedTypeChip").textContent = "ยังไม่ได้เลือก";
+      $("selectedTypeChip").style.removeProperty("--chip-accent");
       $("summaryEmoji").textContent = "🛏️";
       $("summaryRoom").textContent = "-";
       $("summaryType").textContent = "-";
-      $("summaryName").textContent = currentUser?.name || "-";
-      $("summaryId").textContent = currentUser?.studentId || "-";
-      $("bookingAlert").style.display = "none";
-
+      hideInlineAlert("bookingAlert");
+      updateTypeSelectionUI();
       goStep(1);
     }
 
-    // ==================== STEP NAVIGATION ====================
     function goStep(step) {
-      ["step1", "step2", "step3"].forEach((id, i) => {
-        $(id).style.display = step === i + 1 ? "block" : "none";
-      });
-
-      for (let i = 1; i <= 3; i++) {
-        const dot = $(`dot${i}`);
-        const line = $(`line${i}`);
-
-        if (i < step) {
-          dot.className = "step-dot done";
-          dot.textContent = "✓";
-        } else if (i === step) {
-          dot.className = "step-dot active";
-          dot.textContent = i;
-        } else {
-          dot.className = "step-dot";
-          dot.textContent = i;
-        }
-
-        if (line) {
-          line.className = i < step ? "step-line done" : "step-line";
-        }
+      ["step1", "step2", "step3"].forEach((id, index) => { $(id).style.display = step === index + 1 ? "block" : "none"; });
+      for (let index = 1; index <= 3; index++) {
+        const dot = $(`dot${index}`);
+        const line = $(`line${index}`);
+        if (index < step) { dot.className = "step-dot done"; dot.textContent = "✓"; }
+        else if (index === step) { dot.className = "step-dot active"; dot.textContent = String(index); }
+        else { dot.className = "step-dot"; dot.textContent = String(index); }
+        if (line) line.className = index < step ? "step-line done" : "step-line";
       }
-
-      // Clear alert
-      $("bookingAlert").style.display = "none";
     }
 
-    // ==================== TYPE SELECTION ====================
-    function resetTypeSelection() {
-      document.querySelectorAll(".type-card").forEach((card) => {
-        card.classList.remove("selected");
-      });
-    }
-
-    function selectType(type) {
-      if (isSubmitting) return;
-
-      selectedType = type;
-      selectedRoom = null;
-
-      resetTypeSelection();
-      $(`type-${type}`).classList.add("selected");
-      $("step2Title").textContent =
-        type === "3person"
-          ? "🛏️ ห้อง 3 คน — เลือกห้อง"
-          : "🛏️ ห้อง 2 คน — เลือกห้อง";
-
+    function selectType(typeKey) {
+      if (state.isSubmitting) return;
+      const type = getTypeByKey(typeKey);
+      if (!type) return;
+      state.selectedType = typeKey;
+      state.selectedRoom = null;
+      updateTypeSelectionUI();
+      $("selectedTypeChip").textContent = type.label;
+      $("selectedTypeChip").style.setProperty("--chip-accent", type.accent);
+      $("step2Title").textContent = `Step 2 เลือกประเภทห้องสำหรับ ${type.label}`;
+      renderRoomStats([{ label: "ประเภทห้อง", value: `${type.roomTypeCount} ประเภท` }, { label: "ห้องทั้งหมด", value: `${type.totalInventory} ห้อง` }, { label: "รองรับ", value: `${type.capacity} คน / ห้อง` }]);
       goStep(2);
-      loadRooms(type);
+      loadRooms(typeKey);
     }
 
-    // ==================== ROOM LOADING ====================
-    function loadRooms(type) {
-      const container = $("roomsContainer");
-      container.innerHTML =
-        '<div class="skeleton"></div>' +
-        '<div class="skeleton"></div>' +
-        '<div class="skeleton"></div>';
+    function updateTypeSelectionUI() {
+      document.querySelectorAll(".type-card").forEach((card) => card.classList.remove("selected"));
+      if (state.selectedType) $(`type-${state.selectedType}`)?.classList.add("selected");
+    }
 
-      google.script.run
-        .withSuccessHandler((status) => {
-          renderRooms(status);
-        })
-        .withFailureHandler((err) => {
-          console.error("getRoomsStatus error:", err);
-          container.innerHTML =
-            '<div class="map-empty">โหลดข้อมูลห้องไม่สำเร็จ</div>';
-        })
-        .getRoomsStatus(type);
+    function loadRooms(typeKey) {
+      const container = $("roomsContainer");
+      const requestToken = ++state.roomRequestToken;
+      container.innerHTML = Array.from({ length: 3 }).map(() => '<div class="skeleton"></div>').join("");
+      google.script.run.withSuccessHandler((status) => {
+        if (requestToken !== state.roomRequestToken) return;
+        renderRooms(status);
+      }).withFailureHandler((error) => {
+        if (requestToken !== state.roomRequestToken) return;
+        console.error("getRoomsStatus error:", error);
+        container.innerHTML = '<div class="map-empty">โหลดข้อมูลห้องไม่สำเร็จ</div>';
+        showToast("error", "โหลดข้อมูลห้องไม่สำเร็จ กรุณาลองใหม่");
+      }).getRoomsStatus(typeKey);
     }
 
     function renderRooms(status) {
       const container = $("roomsContainer");
       container.innerHTML = "";
-
-      if (!status || !Object.keys(status).length) {
-        container.innerHTML =
-          '<div class="map-empty">ไม่พบข้อมูลห้อง</div>';
+      if (!status || !Array.isArray(status.rooms) || !status.rooms.length) {
+        container.innerHTML = '<div class="map-empty">ไม่พบข้อมูลห้องสำหรับจำนวนคนนี้</div>';
         return;
       }
-
-      Object.keys(status).forEach((key) => {
-        const r = status[key];
-        const disabled = !r.available;
-        const pct = r.total > 0 ? Math.round((r.booked / r.total) * 100) : 0;
-
-        let badgeClass = "available";
-        let badgeText = `เหลือ ${r.remaining} ห้อง`;
-        let fillColor = "#1a6b5a";
-
-        if (disabled) {
-          badgeClass = "full";
-          badgeText = "เต็มแล้ว";
-          fillColor = "#dc2626";
-        } else if (r.remaining === 1) {
-          badgeClass = "almost";
-          badgeText = "เหลือ 1 ห้องสุดท้าย!";
-          fillColor = "#f59e0b";
-        }
-
-        const card = document.createElement("div");
-        card.className = `room-card${disabled ? " disabled" : ""}`;
-        card.id = `card-${key}`;
-        card.innerHTML = `
-          <div class="card-top">
-            <div class="room-info">
-              <div class="room-emoji">${escapeHtml(r.emoji)}</div>
-              <div>
-                <div class="room-name">${escapeHtml(r.label)}</div>
-                <div class="room-sub">ทั้งหมด ${r.total} ห้อง</div>
-              </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-              <span class="badge ${badgeClass}">${escapeHtml(badgeText)}</span>
-              <div class="check-circle" id="check-${key}"></div>
-            </div>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: ${pct}%; background: ${fillColor};"></div>
-          </div>
-          <div class="progress-text">
-            <span>จองแล้ว ${r.booked} ห้อง</span>
-            <span>เหลือ ${r.remaining} / ${r.total}</span>
-          </div>
-        `;
-
-        if (!disabled) {
-          card.addEventListener("click", () =>
-            selectRoom(key, r.label, r.emoji)
-          );
-        }
-
+      renderRoomStats([{ label: "ประเภทห้อง", value: `${status.roomTypeCount} ประเภท` }, { label: "ห้องที่เหลือ", value: `${status.totalRemaining} ห้อง` }, { label: "จองแล้ว", value: `${status.totalBooked} ห้อง` }]);
+      let selectedStillAvailable = false;
+      status.rooms.forEach((room) => {
+        const occupancy = room.total > 0 ? Math.round((room.booked / room.total) * 100) : 0;
+        const badge = getRoomBadge(room);
+        const isSelected = state.selectedRoom?.key === room.key && room.available;
+        if (isSelected) selectedStillAvailable = true;
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = `room-card${room.available ? "" : " disabled"}${isSelected ? " selected" : ""}`;
+        card.id = `room-${room.key}`;
+        card.innerHTML = `<div class="room-top"><div class="room-title-wrap"><div class="room-emoji">${escapeHtml(room.emoji)}</div><div><div class="room-title">${escapeHtml(room.label)}</div><div class="room-meta">ทั้งหมด ${room.total} ห้อง</div></div></div><div class="room-top-side"><span class="badge ${badge.className}">${escapeHtml(badge.label)}</span><span class="pick-mark">${isSelected ? "✓" : ""}</span></div></div><div class="progress-bar"><div class="progress-fill" style="width:${occupancy}%"></div></div><div class="progress-text"><span>จองแล้ว ${room.booked} ห้อง</span><span>เหลือ ${room.remaining}/${room.total}</span></div>`;
+        if (!room.available) card.disabled = true;
+        else card.addEventListener("click", () => selectRoom(room.key, room.label, room.emoji));
         container.appendChild(card);
       });
+      if (state.selectedRoom && !selectedStillAvailable) {
+        state.selectedRoom = null;
+        $("summaryEmoji").textContent = "🛏️";
+        $("summaryRoom").textContent = "-";
+        $("summaryType").textContent = getTypeLabel(state.selectedType);
+      }
     }
 
-    // ==================== ROOM SELECTION ====================
-    function selectRoom(key, label, emoji) {
-      if (isSubmitting) return;
+    function renderRoomStats(items) {
+      $("roomStats").innerHTML = items.map((item) => `<div class="stat-pill"><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.value)}</strong></div>`).join("");
+    }
 
-      selectedRoom = { key, label, emoji };
+    function getRoomBadge(room) {
+      if (!room.available) return { className: "full", label: "เต็มแล้ว" };
+      if (room.remaining === 1) return { className: "almost", label: "เหลือ 1 ห้อง" };
+      return { className: "available", label: `เหลือ ${room.remaining} ห้อง` };
+    }
 
+    function selectRoom(roomKey, roomLabel, roomEmoji) {
+      if (state.isSubmitting) return;
+      state.selectedRoom = { key: roomKey, label: roomLabel, emoji: roomEmoji };
       document.querySelectorAll(".room-card").forEach((card) => {
         card.classList.remove("selected");
-        const check = card.querySelector(".check-circle");
-        if (check) check.textContent = "";
+        const mark = card.querySelector(".pick-mark");
+        if (mark) mark.textContent = "";
       });
-
-      const card = $(`card-${key}`);
-      const check = $(`check-${key}`);
-
-      if (card) card.classList.add("selected");
-      if (check) check.textContent = "✓";
-
-      $("summaryEmoji").textContent = emoji;
-      $("summaryRoom").textContent = label;
-      $("summaryType").textContent =
-        selectedType === "3person" ? "ห้อง 3 คน" : "ห้อง 2 คน";
-      $("summaryName").textContent = currentUser?.name || "-";
-      $("summaryId").textContent = currentUser?.studentId || "-";
-
-      setTimeout(() => goStep(3), 180);
+      const currentCard = $(`room-${roomKey}`);
+      if (currentCard) {
+        currentCard.classList.add("selected");
+        const mark = currentCard.querySelector(".pick-mark");
+        if (mark) mark.textContent = "✓";
+      }
+      $("summaryEmoji").textContent = roomEmoji || "🛏️";
+      $("summaryRoom").textContent = roomLabel || "-";
+      $("summaryType").textContent = getTypeLabel(state.selectedType);
+      $("summaryName").textContent = state.currentUser?.name || "-";
+      $("summaryId").textContent = state.currentUser?.studentId || "-";
+      window.setTimeout(() => goStep(3), 140);
     }
 
-    // ==================== BOOKING CONFIRMATION ====================
     function confirmBooking() {
-      if (isSubmitting) return;
-
-      if (!selectedRoom || !selectedType || !currentUser) {
-        showAlert("bookingAlert", "error", "กรุณาเลือกห้องก่อน");
+      if (state.isSubmitting) return;
+      if (!state.currentUser || !state.selectedType || !state.selectedRoom) {
+        showInlineAlert("bookingAlert", "error", "กรุณาเลือกประเภทห้องก่อนยืนยัน");
         goStep(2);
         return;
       }
-
-      isSubmitting = true;
-      const btn = $("confirmBtn");
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span>กำลังจอง...';
-      $("bookingAlert").style.display = "none";
-
-      // Add timeout safety (20 seconds)
+      state.isSubmitting = true;
+      setButtonBusy($("confirmBtn"), true, "ยืนยันการจอง", "กำลังจอง...");
+      hideInlineAlert("bookingAlert");
       const timeoutId = setTimeout(() => {
-        isSubmitting = false;
-        btn.disabled = false;
-        btn.innerHTML = "✅ ยืนยันการจอง";
-        showAlert(
-          "bookingAlert",
-          "error",
-          "หมดเวลาการจอง กรุณาลองใหม่"
-        );
-        loadRooms(selectedType);
+        state.isSubmitting = false;
+        setButtonBusy($("confirmBtn"), false, "ยืนยันการจอง");
+        showInlineAlert("bookingAlert", "error", "ใช้เวลาจองนานเกินไป กรุณาลองใหม่");
+        loadRooms(state.selectedType);
       }, 20000);
-
-      google.script.run
-        .withSuccessHandler((res) => {
-          clearTimeout(timeoutId);
-          handleBookingSuccess(res, btn);
-        })
-        .withFailureHandler((err) => {
-          clearTimeout(timeoutId);
-          handleBookingError(err, btn);
-        })
-        .submitBooking(
-          currentUser.studentId,
-          currentUser.name,
-          selectedRoom.key,
-          selectedType
-        );
+      google.script.run.withSuccessHandler((response) => { clearTimeout(timeoutId); handleBookingSuccess(response); }).withFailureHandler((error) => { clearTimeout(timeoutId); handleBookingFailure(error); }).submitBooking(state.currentUser.studentId, state.currentUser.name, state.selectedRoom.key, state.selectedType);
     }
 
-    function handleBookingSuccess(res, btn) {
-      isSubmitting = false;
-      btn.disabled = false;
-      btn.innerHTML = "✅ ยืนยันการจอง";
-
-      if (!res || !res.success) {
-        showAlert("bookingAlert", "error", res?.message || "เกิดข้อผิดพลาด");
-        loadRooms(selectedType);
+    function handleBookingSuccess(response) {
+      state.isSubmitting = false;
+      setButtonBusy($("confirmBtn"), false, "ยืนยันการจอง");
+      if (!response || !response.success) {
+        showInlineAlert("bookingAlert", "error", response?.message || "จองไม่สำเร็จ");
+        loadRooms(state.selectedType);
         return;
       }
-
-      currentBooking = res.booking || null;
+      state.currentBooking = response.booking || null;
       showHomePage();
-      showSuccessOverlay(currentBooking?.roomLabel || "-");
+      showSuccessOverlay(state.currentBooking?.roomLabel || "-");
     }
 
-    function handleBookingError(err, btn) {
-      console.error("submitBooking error:", err);
-      isSubmitting = false;
-      btn.disabled = false;
-      btn.innerHTML = "✅ ยืนยันการจอง";
-      showAlert(
-        "bookingAlert",
-        "error",
-        "เกิดข้อผิดพลาด กรุณาลองใหม่"
-      );
-      loadRooms(selectedType);
+    function handleBookingFailure(error) {
+      console.error("submitBooking error:", error);
+      state.isSubmitting = false;
+      setButtonBusy($("confirmBtn"), false, "ยืนยันการจอง");
+      showInlineAlert("bookingAlert", "error", error?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่");
+      loadRooms(state.selectedType);
     }
 
-    // ==================== BOOKING CANCELLATION ====================
     function askCancel() {
-      if (!currentBooking || isCancelling) return;
-      $("confirmCancelText").textContent =
-        `คุณต้องการยกเลิกการจองห้อง "${currentBooking.roomLabel || "-"}" ใช่หรือไม่?`;
+      if (!state.currentBooking || state.isCancelling) return;
+      $("confirmCancelText").textContent = `คุณต้องการยกเลิกการจองห้อง "${state.currentBooking.roomLabel || "-"}" ใช่หรือไม่`;
       $("confirmOverlay").classList.add("active");
     }
 
-    function closeConfirm() {
-      $("confirmOverlay").classList.remove("active");
-    }
+    function closeConfirm() { $("confirmOverlay").classList.remove("active"); }
 
     function doCancel() {
-      if (!currentUser || isCancelling) return;
-
-      isCancelling = true;
+      if (!state.currentUser || state.isCancelling) return;
       closeConfirm();
-
-      const btn = $("cancelBtn");
-      btn.disabled = true;
-      btn.innerHTML =
-        '<span class="spinner spinner-red"></span>กำลังยกเลิก...';
-
-      // Add timeout safety (20 seconds)
+      state.isCancelling = true;
+      setButtonBusy($("cancelBtn"), true, "ยกเลิกการจอง", "กำลังยกเลิก...");
       const timeoutId = setTimeout(() => {
-        isCancelling = false;
-        btn.disabled = false;
-        btn.innerHTML = "❌ ยกเลิกการจอง";
-        alert("หมดเวลาการยกเลิก กรุณาลองใหม่");
+        state.isCancelling = false;
+        setButtonBusy($("cancelBtn"), false, "ยกเลิกการจอง");
+        showToast("error", "ใช้เวลายกเลิกนานเกินไป กรุณาลองใหม่");
       }, 20000);
-
-      google.script.run
-        .withSuccessHandler((res) => {
-          clearTimeout(timeoutId);
-          handleCancelSuccess(res, btn);
-        })
-        .withFailureHandler((err) => {
-          clearTimeout(timeoutId);
-          handleCancelError(err, btn);
-        })
-        .cancelBooking(currentUser.studentId);
+      google.script.run.withSuccessHandler((response) => { clearTimeout(timeoutId); handleCancelSuccess(response); }).withFailureHandler((error) => { clearTimeout(timeoutId); handleCancelFailure(error); }).cancelBooking(state.currentUser.studentId);
     }
 
-    function handleCancelSuccess(res, btn) {
-      isCancelling = false;
-      btn.disabled = false;
-      btn.innerHTML = "❌ ยกเลิกการจอง";
-
-      if (!res || !res.success) {
-        alert(res?.message || "เกิดข้อผิดพลาด");
-        return;
-      }
-
-      currentBooking = null;
+    function handleCancelSuccess(response) {
+      state.isCancelling = false;
+      setButtonBusy($("cancelBtn"), false, "ยกเลิกการจอง");
+      if (!response || !response.success) return showToast("error", response?.message || "ยกเลิกการจองไม่สำเร็จ");
+      state.currentBooking = null;
       showBookingPage();
+      showToast("success", "ยกเลิกการจองเรียบร้อยแล้ว");
     }
 
-    function handleCancelError(err, btn) {
-      console.error("cancelBooking error:", err);
-      isCancelling = false;
-      btn.disabled = false;
-      btn.innerHTML = "❌ ยกเลิกการจอง";
-      alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
+    function handleCancelFailure(error) {
+      console.error("cancelBooking error:", error);
+      state.isCancelling = false;
+      setButtonBusy($("cancelBtn"), false, "ยกเลิกการจอง");
+      showToast("error", error?.message || "เกิดข้อผิดพลาดระหว่างยกเลิกการจอง");
     }
 
-    
-// ==================== SUCCESS OVERLAY MANAGEMENT ====================
-let successAutoCloseTimeout = null;
-let successCountdownInterval = null;
-
-// Handlers references so we can remove them safely
-let successOverlayClickHandler = null;
-let successBoxClickHandler = null;
-let successTouchHandler = null;
-let successEscHandler = null;
-
-function showSuccessOverlay(roomLabel) {
-  $("successRoom").textContent = roomLabel || "-";
-  const overlay = $("successOverlay");
-  
-  if (overlay) {
-    overlay.classList.add("active");
-    overlay.style.pointerEvents = "auto";
-  }
-  
-  // Clear existing timeouts/intervals
-  if (successAutoCloseTimeout) {
-    clearTimeout(successAutoCloseTimeout);
-    successAutoCloseTimeout = null;
-  }
-  if (successCountdownInterval) {
-    clearInterval(successCountdownInterval);
-    successCountdownInterval = null;
-  }
-
-  // Reset progress bar and animate smoothly
-  const progressBar = $("autoCloseProgress");
-  if (progressBar) {
-    // Ensure no leftover transition interfering
-    progressBar.style.transition = "none";
-    progressBar.style.width = "100%";
-
-    // Force reflow
-    void progressBar.offsetWidth;
-
-    // Now set transition and animate to 0% using rAF to ensure browser picks it up
-    progressBar.style.transition = "width 10s linear";
-
-    // Use double rAF to reliably trigger the transition
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        progressBar.style.width = "0%";
-      });
-    });
-  }
-
-  // Auto close after 10 seconds
-  successAutoCloseTimeout = setTimeout(() => {
-    closeSuccessOverlay();
-  }, 10000);
-
-  setupSuccessClickListener();
-  setupKeyboardClose();
-}
-
-function setupSuccessClickListener() {
-  const overlay = $("successOverlay");
-  const box = $("successBox");
-
-  if (!overlay) return;
-
-  // Remove previous handlers if any
-  if (successOverlayClickHandler) {
-    overlay.removeEventListener("click", successOverlayClickHandler);
-    successOverlayClickHandler = null;
-  }
-  if (successBoxClickHandler && box) {
-    box.removeEventListener("click", successBoxClickHandler);
-    successBoxClickHandler = null;
-  }
-  if (successTouchHandler) {
-    overlay.removeEventListener("touchend", successTouchHandler);
-    successTouchHandler = null;
-  }
-
-  // Click on overlay background = close (only when clicking the background)
-  successOverlayClickHandler = function(e) {
-    if (e.target === overlay) {
-      closeSuccessOverlay();
+    function showSuccessOverlay(roomLabel) {
+      $("successRoom").textContent = roomLabel || "-";
+      $("successOverlay").classList.add("active");
+      const progress = $("autoCloseProgress");
+      progress.style.transition = "none";
+      progress.style.width = "100%";
+      void progress.offsetWidth;
+      progress.style.transition = "width 8s linear";
+      requestAnimationFrame(() => { progress.style.width = "0%"; });
+      clearTimeout(state.successTimer);
+      state.successTimer = setTimeout(closeSuccessOverlay, 8000);
     }
-  };
-  overlay.addEventListener("click", successOverlayClickHandler, false);
 
-  // Click on modal box = close (stop propagation is not needed here; clicking box should also close per original behavior)
-  if (box) {
-    successBoxClickHandler = function(e) {
-      e.stopPropagation();
-      closeSuccessOverlay();
-    };
-    box.addEventListener("click", successBoxClickHandler, false);
-  }
-
-  // Touch support: close on touchend
-  successTouchHandler = function(e) {
-    e.stopPropagation();
-    closeSuccessOverlay();
-  };
-  overlay.addEventListener("touchend", successTouchHandler, false);
-}
-
-function setupKeyboardClose() {
-  // Remove previous ESC handler if any
-  if (successEscHandler) {
-    document.removeEventListener("keydown", successEscHandler);
-    successEscHandler = null;
-  }
-
-  successEscHandler = function handleEsc(e) {
-    if (e.key === "Escape") {
-      closeSuccessOverlay();
-      // remove after triggered
-      if (successEscHandler) {
-        document.removeEventListener("keydown", successEscHandler);
-        successEscHandler = null;
-      }
+    function closeSuccessOverlay() {
+      $("successOverlay").classList.remove("active");
+      clearTimeout(state.successTimer);
+      state.successTimer = null;
+      const progress = $("autoCloseProgress");
+      progress.style.transition = "none";
+      progress.style.width = "100%";
     }
-  };
 
-  document.addEventListener("keydown", successEscHandler, false);
-}
-
-function closeSuccessOverlay() {
-  // Clear timeouts/intervals
-  if (successAutoCloseTimeout) {
-    clearTimeout(successAutoCloseTimeout);
-    successAutoCloseTimeout = null;
-  }
-  if (successCountdownInterval) {
-    clearInterval(successCountdownInterval);
-    successCountdownInterval = null;
-  }
-
-  // Remove event listeners for overlay/box/touch/esc
-  const overlay = $("successOverlay");
-  const box = $("successBox");
-  if (overlay) {
-    overlay.classList.remove("active");
-    overlay.style.pointerEvents = "none";
-
-    if (successOverlayClickHandler) {
-      overlay.removeEventListener("click", successOverlayClickHandler);
-      successOverlayClickHandler = null;
-    }
-    if (successTouchHandler) {
-      overlay.removeEventListener("touchend", successTouchHandler);
-      successTouchHandler = null;
-    }
-  }
-  if (box && successBoxClickHandler) {
-    box.removeEventListener("click", successBoxClickHandler);
-    successBoxClickHandler = null;
-  }
-  if (successEscHandler) {
-    document.removeEventListener("keydown", successEscHandler);
-    successEscHandler = null;
-  }
-
-  // Reset progress bar to full (so next open starts full)
-  const progressBar = $("autoCloseProgress");
-  if (progressBar) {
-    // Remove transition so it snaps back (optional)
-    progressBar.style.transition = "none";
-    progressBar.style.width = "100%";
-    // Force reflow
-    void progressBar.offsetWidth;
-  }
-}
-    // ==================== MAP DISPLAY ====================
     function loadMap() {
-      const container = $("mapContainer");
-      container.innerHTML =
-        '<div class="map-empty">กำลังโหลดแผนที่...</div>';
-
-      google.script.run
-        .withSuccessHandler((base64) => {
-          handleMapSuccess(base64, container);
-        })
-        .withFailureHandler((err) => {
-          console.error("getMapImageBase64 error:", err);
-          container.innerHTML =
-            '<div class="map-empty">โหลดแผนที่ไม่สำเร็จ</div>';
-        })
-        .getMapImageBase64();
+      $("mapContainer").innerHTML = '<div class="map-empty">กำลังโหลดแผนที่...</div>';
+      google.script.run.withSuccessHandler((base64) => {
+        if (!base64) {
+          $("mapContainer").innerHTML = '<div class="map-empty">ยังไม่ได้ตั้งค่าแผนที่<div class="map-sub">ใส่ FILE ID ในตัวแปร MAP_IMAGE_FILE_ID ที่ Code.gs</div></div>';
+          return;
+        }
+        $("mapContainer").innerHTML = `<img class="map-img" src="${base64}" alt="แผนที่ห้องพัก">`;
+      }).withFailureHandler((error) => {
+        console.error("getMapImageBase64 error:", error);
+        $("mapContainer").innerHTML = '<div class="map-empty">โหลดแผนที่ไม่สำเร็จ</div>';
+      }).getMapImageBase64();
     }
 
-    function handleMapSuccess(base64, container) {
-      if (!base64) {
-        container.innerHTML = `
-          <div class="map-empty">
-            ยังไม่ได้ตั้งค่าแผนที่
-            <div style="font-size: 12px; margin-top: 6px; color: #9ca3af;">
-              ใส่ FILE ID ใน Code.gs ที่ตัวแปร MAP_IMAGE_FILE_ID
-            </div>
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = `<img class="map-img" src="${base64}" alt="แผนที่โรงแรม">`;
-    }
-
-    // ==================== TAB NAVIGATION ====================
     function showRoomsTab() {
-      currentTab = "rooms";
+      state.currentTab = "rooms";
       $("roomsPage").style.display = "block";
       $("mapPage").style.display = "none";
       $("tabRoomsBtn").classList.add("active");
@@ -1067,7 +565,7 @@ function closeSuccessOverlay() {
     }
 
     function showMapTab() {
-      currentTab = "map";
+      state.currentTab = "map";
       $("roomsPage").style.display = "none";
       $("mapPage").style.display = "block";
       $("tabRoomsBtn").classList.remove("active");
@@ -1075,38 +573,43 @@ function closeSuccessOverlay() {
       loadMap();
     }
 
-    // ==================== UTILITY FUNCTIONS ====================
-    function showAlert(id, type, message) {
-      const el = $(id);
-      el.className = `alert ${type}`;
-      el.textContent = message;
-      el.style.display = "block";
+    function showInlineAlert(id, type, message) {
+      const element = $(id);
+      element.className = `alert ${type}`;
+      element.textContent = message;
+      element.style.display = "block";
     }
 
-    function escapeHtml(str) {
-      return String(str || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+    function hideInlineAlert(id) { $(id).style.display = "none"; }
+
+    function showToast(type, message) {
+      const toast = $("floatingAlert");
+      toast.className = `floating-alert ${type} show`;
+      toast.textContent = message;
+      clearTimeout(state.toastTimer);
+      state.toastTimer = setTimeout(() => { toast.className = "floating-alert"; }, 2800);
     }
 
-    function formatDate(dateStr) {
+    function setButtonBusy(button, isBusy, label, busyLabel) {
+      button.disabled = isBusy;
+      button.innerHTML = isBusy ? `<span class="spinner"></span>${escapeHtml(busyLabel)}` : escapeHtml(label);
+    }
+
+    function getTypeByKey(typeKey) { return ROOM_CATALOG.find((type) => type.key === typeKey) || null; }
+    function getTypeLabel(typeKey) { return getTypeByKey(typeKey)?.label || "-"; }
+
+    function formatDate(dateString) {
       try {
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return "-";
-
-        return d.toLocaleDateString("th-TH", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      } catch {
+        const date = new Date(dateString);
+        if (Number.isNaN(date.getTime())) return "-";
+        return date.toLocaleString("th-TH", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+      } catch (error) {
         return "-";
       }
+    }
+
+    function escapeHtml(value) {
+      return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;");
     }
   </script>
 </body>
