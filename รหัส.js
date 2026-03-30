@@ -109,7 +109,7 @@ const GROUP_ORDER = Object.freeze(
 );
 
 const MAP_IMAGE_FILE_ID = "1uzRXK6CaT1msIed9uFWeM-WLNr2wZG7W";
-const ROOM_STATUS_CACHE_TTL = 20;
+const ROOM_STATUS_CACHE_TTL = 8;
 const BOOKING_CACHE_TTL = 120;
 
 function doGet() {
