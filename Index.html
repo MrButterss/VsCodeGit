@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
@@ -16,7 +16,7 @@
       <div class="modal-badge">Mudchim RxSU38</div>
       <div class="modal-icon">🏝️</div>
       <h2>เข้าสู่ระบบจองห้องพัก</h2>
-      <p class="subtitle">กรอกชื่อ รหัสนักศึกษา และอีเมล @su.ac.th ระบบจะสมัครหรือเข้าสู่ระบบให้อัตโนมัติ</p>
+      <p class="subtitle">กรอกชื่อและรหัสนักศึกษาเพื่อเริ่มจองห้อง</p>
 
       <div class="input-group">
         <label for="loginName">ชื่อ - นามสกุล</label>
@@ -26,11 +26,6 @@
       <div class="input-group">
         <label for="loginStudentId">รหัสนักศึกษา 9 หลัก</label>
         <input type="text" id="loginStudentId" placeholder="เช่น 660810123" maxlength="9" autocomplete="off" />
-      </div>
-
-      <div class="input-group">
-        <label for="loginEmail">อีเมลมหาวิทยาลัย</label>
-        <input type="email" id="loginEmail" placeholder="example@su.ac.th" autocomplete="off" />
       </div>
 
       <div class="alert" id="loginAlert"></div>
@@ -63,7 +58,7 @@
 
   <div class="floating-alert" id="floatingAlert"></div>
 
-  <header class="hero" id="heroHeader" style="display:none">
+  <header class="hero">
     <div class="hero-mark">🏝️</div>
     <div class="hero-copy">
       <div class="hero-badge">Mudchim RxSU38</div>
@@ -93,7 +88,8 @@
         </div>
 
         <div class="power-quote">
-          <div class="power-quote-text">Midway moments, still growing.</div>
+          <span class="power-quote-mark"></span>
+          <div class="power-quote-text">🎊Midway moment, still growing🎊</div>
         </div>
 
         <div class="booking-card">
@@ -153,9 +149,7 @@
           </div>
 
           <div id="step3" class="step-panel" style="display:none">
-            <div class="step-toolbar">
-              <button class="btn-back" id="backBtn3">← ย้อนกลับ</button>
-            </div>
+            <button class="btn-back" id="backBtn3">← ย้อนกลับ</button>
             <div class="section-header">
               <div class="section-title">Step 3 ยืนยันการจอง</div>
               <div class="section-copy">ตรวจสอบข้อมูลก่อนยืนยัน</div>
@@ -184,7 +178,7 @@
         <div class="map-card">
           <div class="map-head">
             <div>
-              <div class="section-title no-line map-title">แผนที่ห้องพัก</div>
+              <div class="section-title no-line">แผนที่ห้องพัก</div>
               <div class="section-copy">กดรีเฟรชเมื่อมีการอัปเดต</div>
             </div>
             <button class="btn btn-secondary map-refresh" id="refreshMapBtn">รีเฟรช</button>
@@ -212,9 +206,8 @@
 
   <script>
     const ROOM_CATALOG = Object.freeze(<?!= roomCatalogJson ?>);
-    const ROOM_AUTO_REFRESH_MS = 10000;
     const $ = (id) => document.getElementById(id);
-    const state = { currentUser: null, currentBooking: null, selectedType: null, selectedRoom: null, currentTab: "rooms", currentStep: 1, isLoggingIn: false, isSubmitting: false, isCancelling: false, roomRequestToken: 0, roomRefreshTimer: null, successTimer: null, toastTimer: null };
+    const state = { currentUser: null, currentBooking: null, selectedType: null, selectedRoom: null, currentTab: "rooms", isLoggingIn: false, isSubmitting: false, isCancelling: false, roomRequestToken: 0, successTimer: null, toastTimer: null };
 
     document.addEventListener("DOMContentLoaded", initializeApp);
 
@@ -222,6 +215,7 @@
       renderTypeSelector();
       renderCapacityStrip();
       bindEvents();
+      loadMap();
       showRoomsTab();
       goStep(1);
     }
@@ -239,13 +233,11 @@
       $("backBtn3").addEventListener("click", () => goStep(2));
       $("loginName").addEventListener("keydown", handleLoginEnter);
       $("loginStudentId").addEventListener("keydown", handleLoginEnter);
-      $("loginEmail").addEventListener("keydown", handleLoginEnter);
       $("loginStudentId").addEventListener("input", (event) => { event.target.value = event.target.value.replace(/\D/g, ""); });
       $("confirmOverlay").addEventListener("click", (event) => { if (event.target === $("confirmOverlay")) closeConfirm(); });
       $("successOverlay").addEventListener("click", (event) => { if (event.target === $("successOverlay")) closeSuccessOverlay(); });
       $("successBox").addEventListener("click", closeSuccessOverlay);
       document.addEventListener("keydown", (event) => { if (event.key === "Escape") { closeConfirm(); closeSuccessOverlay(); } });
-      document.addEventListener("visibilitychange", syncRoomAutoRefresh);
     }
 
     function handleLoginEnter(event) { if (event.key === "Enter") doLogin(); }
@@ -274,11 +266,8 @@
       if (state.isLoggingIn) return;
       const name = $("loginName").value.trim();
       const studentId = $("loginStudentId").value.trim();
-      const email = $("loginEmail").value.trim();
       if (!name) return showInlineAlert("loginAlert", "error", "กรุณากรอกชื่อ - นามสกุล");
       if (!/^\d{9}$/.test(studentId)) return showInlineAlert("loginAlert", "error", "รหัสนักศึกษาต้องเป็นตัวเลข 9 หลัก");
-      if (!email) return showInlineAlert("loginAlert", "error", "กรุณากรอกอีเมลมหาวิทยาลัย");
-      if (!/@su\.ac\.th$/i.test(email)) return showInlineAlert("loginAlert", "error", "กรุณาใช้อีเมล @su.ac.th เท่านั้น");
       state.isLoggingIn = true;
       setButtonBusy($("loginBtn"), true, "เข้าสู่ระบบ", "กำลังตรวจสอบ...");
       hideInlineAlert("loginAlert");
@@ -287,20 +276,18 @@
         setButtonBusy($("loginBtn"), false, "เข้าสู่ระบบ");
         showInlineAlert("loginAlert", "error", "ใช้เวลาตรวจสอบนานเกินไป กรุณาลองใหม่");
       }, 15000);
-      google.script.run.withSuccessHandler((response) => { clearTimeout(timeoutId); handleLoginSuccess(response); }).withFailureHandler((error) => { clearTimeout(timeoutId); handleLoginFailure(error); }).login(studentId, name, email);
+      google.script.run.withSuccessHandler((response) => { clearTimeout(timeoutId); handleLoginSuccess(response); }).withFailureHandler((error) => { clearTimeout(timeoutId); handleLoginFailure(error); }).login(studentId, name);
     }
 
     function handleLoginSuccess(response) {
       state.isLoggingIn = false;
       setButtonBusy($("loginBtn"), false, "เข้าสู่ระบบ");
       if (!response || !response.success) return showInlineAlert("loginAlert", "error", response?.message || "เข้าสู่ระบบไม่สำเร็จ");
-      state.currentUser = { name: response.name, studentId: response.studentId, email: response.email || "" };
+      state.currentUser = { name: response.name, studentId: response.studentId };
       state.currentBooking = response.booking || null;
       $("heroName").textContent = response.name || "-";
       $("heroId").textContent = response.studentId || "-";
-      $("heroHeader").style.display = "flex";
       $("loginOverlay").classList.remove("active");
-      loadMap();
       state.currentBooking ? showHomePage() : showBookingPage();
     }
 
@@ -314,7 +301,6 @@
       $("homePage").style.display = "block";
       $("bookingPage").style.display = "none";
       $("sidebarInfo").style.display = "none";
-      stopRoomAutoRefresh();
       const booking = state.currentBooking;
       if (!booking) return;
       $("homeName").textContent = booking.name || "-";
@@ -334,7 +320,6 @@
       resetBookingFlow();
       $("summaryName").textContent = state.currentUser?.name || "-";
       $("summaryId").textContent = state.currentUser?.studentId || "-";
-      syncRoomAutoRefresh();
     }
 
     function resetBookingFlow() {
@@ -348,11 +333,9 @@
       hideInlineAlert("bookingAlert");
       updateTypeSelectionUI();
       goStep(1);
-      syncRoomAutoRefresh();
     }
 
     function goStep(step) {
-      state.currentStep = step;
       ["step1", "step2", "step3"].forEach((id, index) => { $(id).style.display = step === index + 1 ? "block" : "none"; });
       for (let index = 1; index <= 3; index++) {
         const dot = $(`dot${index}`);
@@ -362,7 +345,6 @@
         else { dot.className = "step-dot"; dot.textContent = String(index); }
         if (line) line.className = index < step ? "step-line done" : "step-line";
       }
-      syncRoomAutoRefresh();
     }
 
     function selectType(typeKey) {
@@ -376,7 +358,6 @@
       renderRoomStats([{ label: "ประเภทห้อง", value: `${type.roomTypeCount} ประเภท` }, { label: "ห้องทั้งหมด", value: `${type.totalInventory} ห้อง` }, { label: "รองรับ", value: `${type.capacity} คน / ห้อง` }]);
       goStep(2);
       loadRooms(typeKey);
-      syncRoomAutoRefresh();
     }
 
     function updateTypeSelectionUI() {
@@ -384,24 +365,18 @@
       if (state.selectedType) $(`type-${state.selectedType}`)?.classList.add("selected");
     }
 
-    function loadRooms(typeKey, options = {}) {
+    function loadRooms(typeKey) {
       const container = $("roomsContainer");
       const requestToken = ++state.roomRequestToken;
-      const useSkeleton = options.useSkeleton !== false;
-      const suppressToast = options.suppressToast === true;
-      if (useSkeleton) {
-        container.innerHTML = Array.from({ length: 3 }).map(() => '<div class="skeleton"></div>').join("");
-      }
+      container.innerHTML = Array.from({ length: 3 }).map(() => '<div class="skeleton"></div>').join("");
       google.script.run.withSuccessHandler((status) => {
         if (requestToken !== state.roomRequestToken) return;
         renderRooms(status);
       }).withFailureHandler((error) => {
         if (requestToken !== state.roomRequestToken) return;
         console.error("getRoomsStatus error:", error);
-        if (useSkeleton) {
-          container.innerHTML = '<div class="map-empty">โหลดข้อมูลห้องไม่สำเร็จ</div>';
-        }
-        if (!suppressToast) showToast("error", "โหลดข้อมูลห้องไม่สำเร็จ");
+        container.innerHTML = '<div class="map-empty">โหลดข้อมูลห้องไม่สำเร็จ</div>';
+        showToast("error", "โหลดข้อมูลห้องไม่สำเร็จ");
       }).getRoomsStatus(typeKey);
     }
 
@@ -413,7 +388,6 @@
         return;
       }
       renderRoomStats([{ label: "ประเภทห้อง", value: `${status.roomTypeCount} ประเภท` }, { label: "ห้องที่เหลือ", value: `${status.totalRemaining} ห้อง` }, { label: "จองแล้ว", value: `${status.totalBooked} ห้อง` }]);
-      const previousSelectedRoomKey = state.selectedRoom?.key || null;
       let selectedStillAvailable = false;
       status.rooms.forEach((room) => {
         const occupancy = room.total > 0 ? Math.round((room.booked / room.total) * 100) : 0;
@@ -434,10 +408,6 @@
         $("summaryEmoji").textContent = "🛏️";
         $("summaryRoom").textContent = "-";
         $("summaryType").textContent = getTypeLabel(state.selectedType);
-        if (previousSelectedRoomKey) {
-          showToast("error", "ห้องที่เลือกไม่ว่างแล้ว กรุณาเลือกใหม่");
-          if (state.currentStep === 3) goStep(2);
-        }
       }
     }
 
@@ -481,22 +451,19 @@
         return;
       }
       state.isSubmitting = true;
-      syncRoomAutoRefresh();
       setButtonBusy($("confirmBtn"), true, "ยืนยันการจอง", "กำลังจอง...");
       hideInlineAlert("bookingAlert");
       const timeoutId = setTimeout(() => {
         state.isSubmitting = false;
-        syncRoomAutoRefresh();
         setButtonBusy($("confirmBtn"), false, "ยืนยันการจอง");
         showInlineAlert("bookingAlert", "error", "ใช้เวลาจองนานเกินไป กรุณาลองใหม่");
         loadRooms(state.selectedType);
       }, 20000);
-      google.script.run.withSuccessHandler((response) => { clearTimeout(timeoutId); handleBookingSuccess(response); }).withFailureHandler((error) => { clearTimeout(timeoutId); handleBookingFailure(error); }).submitBooking(state.currentUser.studentId, state.currentUser.name, state.currentUser.email, state.selectedRoom.key, state.selectedType);
+      google.script.run.withSuccessHandler((response) => { clearTimeout(timeoutId); handleBookingSuccess(response); }).withFailureHandler((error) => { clearTimeout(timeoutId); handleBookingFailure(error); }).submitBooking(state.currentUser.studentId, state.currentUser.name, state.selectedRoom.key, state.selectedType);
     }
 
     function handleBookingSuccess(response) {
       state.isSubmitting = false;
-      syncRoomAutoRefresh();
       setButtonBusy($("confirmBtn"), false, "ยืนยันการจอง");
       if (!response || !response.success) {
         showInlineAlert("bookingAlert", "error", response?.message || "จองไม่สำเร็จ");
@@ -511,7 +478,6 @@
     function handleBookingFailure(error) {
       console.error("submitBooking error:", error);
       state.isSubmitting = false;
-      syncRoomAutoRefresh();
       setButtonBusy($("confirmBtn"), false, "ยืนยันการจอง");
       showInlineAlert("bookingAlert", "error", error?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่");
       loadRooms(state.selectedType);
@@ -596,7 +562,6 @@
       $("mapPage").style.display = "none";
       $("tabRoomsBtn").classList.add("active");
       $("tabMapBtn").classList.remove("active");
-      syncRoomAutoRefresh();
     }
 
     function showMapTab() {
@@ -605,42 +570,7 @@
       $("mapPage").style.display = "block";
       $("tabRoomsBtn").classList.remove("active");
       $("tabMapBtn").classList.add("active");
-      stopRoomAutoRefresh();
       loadMap();
-    }
-
-    function shouldAutoRefreshRooms() {
-      return Boolean(
-        state.currentUser &&
-        !state.currentBooking &&
-        state.currentTab === "rooms" &&
-        state.selectedType &&
-        (state.currentStep === 2 || state.currentStep === 3) &&
-        !state.isSubmitting &&
-        !document.hidden
-      );
-    }
-
-    function startRoomAutoRefresh() {
-      if (state.roomRefreshTimer) return;
-      state.roomRefreshTimer = window.setInterval(() => {
-        if (!shouldAutoRefreshRooms()) {
-          stopRoomAutoRefresh();
-          return;
-        }
-        loadRooms(state.selectedType, { useSkeleton: false, suppressToast: true });
-      }, ROOM_AUTO_REFRESH_MS);
-    }
-
-    function stopRoomAutoRefresh() {
-      if (!state.roomRefreshTimer) return;
-      window.clearInterval(state.roomRefreshTimer);
-      state.roomRefreshTimer = null;
-    }
-
-    function syncRoomAutoRefresh() {
-      if (shouldAutoRefreshRooms()) startRoomAutoRefresh();
-      else stopRoomAutoRefresh();
     }
 
     function showInlineAlert(id, type, message) {
