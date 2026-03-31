@@ -111,6 +111,8 @@ const GROUP_ORDER = Object.freeze(
 const MAP_IMAGE_FILE_ID = "1uzRXK6CaT1msIed9uFWeM-WLNr2wZG7W";
 const ROOM_STATUS_CACHE_TTL = 8;
 const BOOKING_CACHE_TTL = 120;
+const USER_REGISTRY_SHEET = "Users";
+const LOG_BOOK_SHEET = "LogBook";
 
 function doGet() {
   try {
@@ -119,8 +121,7 @@ function doGet() {
 
     return template
       .evaluate()
-      .setTitle("ระบบจองห้องพัก")
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+      .setTitle("ระบบจองห้องพัก");
   } catch (error) {
     Logger.log("doGet error: " + error.message);
     return HtmlService.createHtmlOutput(
@@ -133,15 +134,16 @@ function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
-function login(studentId, name) {
+function login(studentId, name, email) {
   try {
+    email = normalizeEmail_(email);
     studentId = normalizeStudentId_(studentId);
     name = normalizeName_(name);
 
-    if (!name || !studentId) {
+    if (!name || !studentId || !email) {
       return {
         success: false,
-        message: "กรุณากรอกชื่อและรหัสนักศึกษาให้ครบ"
+        message: "กรุณากรอกชื่อ รหัสนักศึกษา และอีเมลให้ครบ"
       };
     }
 
@@ -152,12 +154,22 @@ function login(studentId, name) {
       };
     }
 
-    const booking = getBookingByStudentId_(studentId, { useCache: true });
+    if (!/@su\.ac\.th$/i.test(email)) {
+      return {
+        success: false,
+        message: "กรุณาใช้อีเมล @su.ac.th เท่านั้น"
+      };
+    }
+
+    const identity = resolveUserIdentity_(email, studentId, name);
+    let booking = getBookingByStudentId_(studentId, { useCache: true });
+    booking = backfillBookingEmailIfMissing_(booking, email);
 
     return {
       success: true,
-      studentId: studentId,
-      name: name,
+      studentId: identity.studentId,
+      name: identity.name,
+      email: identity.email,
       booking: booking ? sanitizeBooking_(booking) : null
     };
   } catch (error) {
@@ -278,12 +290,28 @@ function getRoomsStatus(typeKey) {
   }
 }
 
-function submitBooking(studentId, name, roomKey, typeKey) {
+function submitBooking(studentId, name, email, roomKey, typeKey) {
   const lock = LockService.getScriptLock();
   let lockAcquired = false;
 
+  studentId = normalizeStudentId_(studentId);
+  name = normalizeName_(name);
+  email = normalizeEmail_(email);
+  roomKey = String(roomKey || "").trim();
+  typeKey = String(typeKey || "").trim();
+
   try {
     if (!lock.tryLock(25000)) {
+      appendLogBook_({
+        action: "BOOK",
+        status: "REJECTED",
+        studentId: studentId,
+        name: name,
+        email: email,
+        type: typeKey,
+        roomKey: roomKey,
+        message: "ระบบกำลังประมวลผลคำขอจำนวนมาก กรุณาลองใหม่อีกครั้ง"
+      });
       return {
         success: false,
         message: "ระบบกำลังประมวลผลคำขอจำนวนมาก กรุณาลองใหม่อีกครั้ง"
@@ -291,24 +319,69 @@ function submitBooking(studentId, name, roomKey, typeKey) {
     }
     lockAcquired = true;
 
-    studentId = normalizeStudentId_(studentId);
-    name = normalizeName_(name);
-    roomKey = String(roomKey || "").trim();
-    typeKey = String(typeKey || "").trim();
-
-    if (!studentId || !name || !roomKey || !typeKey) {
+    if (!studentId || !name || !email || !roomKey || !typeKey) {
+      appendLogBook_({
+        action: "BOOK",
+        status: "REJECTED",
+        studentId: studentId,
+        name: name,
+        email: email,
+        type: typeKey,
+        roomKey: roomKey,
+        message: "ข้อมูลไม่ครบ"
+      });
       return { success: false, message: "ข้อมูลไม่ครบ" };
     }
 
     if (!/^\d{9}$/.test(studentId)) {
+      appendLogBook_({
+        action: "BOOK",
+        status: "REJECTED",
+        studentId: studentId,
+        name: name,
+        email: email,
+        type: typeKey,
+        roomKey: roomKey,
+        message: "รหัสนักศึกษาต้องเป็นตัวเลข 9 หลัก"
+      });
       return {
         success: false,
         message: "รหัสนักศึกษาต้องเป็นตัวเลข 9 หลัก"
       };
     }
 
+    if (!/@su\.ac\.th$/i.test(email)) {
+      appendLogBook_({
+        action: "BOOK",
+        status: "REJECTED",
+        studentId: studentId,
+        name: name,
+        email: email,
+        type: typeKey,
+        roomKey: roomKey,
+        message: "กรุณาใช้อีเมล @su.ac.th เท่านั้น"
+      });
+      return { success: false, message: "กรุณาใช้อีเมล @su.ac.th เท่านั้น" };
+    }
+
+    const identity = resolveUserIdentity_(email, studentId, name);
+    studentId = identity.studentId;
+    name = identity.name;
+    email = identity.email;
+
     const existing = getBookingByStudentId_(studentId, { useCache: false });
     if (existing) {
+      appendLogBook_({
+        action: "BOOK",
+        status: "REJECTED",
+        studentId: studentId,
+        name: name,
+        email: email,
+        type: existing.type,
+        roomKey: existing.roomKey,
+        roomLabel: existing.roomLabel,
+        message: "คุณจองห้อง " + existing.roomLabel + " ไว้แล้ว"
+      });
       return {
         success: false,
         message: "คุณจองห้อง " + existing.roomLabel + " ไว้แล้ว"
@@ -322,6 +395,16 @@ function submitBooking(studentId, name, roomKey, typeKey) {
 
     const roomConfig = config.rooms[roomKey];
     if (!roomConfig) {
+      appendLogBook_({
+        action: "BOOK",
+        status: "REJECTED",
+        studentId: studentId,
+        name: name,
+        email: email,
+        type: typeKey,
+        roomKey: roomKey,
+        message: "ไม่พบห้องนี้"
+      });
       return { success: false, message: "ไม่พบห้องนี้" };
     }
 
@@ -329,6 +412,17 @@ function submitBooking(studentId, name, roomKey, typeKey) {
     const bookedCount = countBookingsForRoom_(sheet, roomKey);
 
     if (bookedCount >= Number(roomConfig.total || 0)) {
+      appendLogBook_({
+        action: "BOOK",
+        status: "REJECTED",
+        studentId: studentId,
+        name: name,
+        email: email,
+        type: typeKey,
+        roomKey: roomKey,
+        roomLabel: roomConfig.label,
+        message: "ห้อง " + roomConfig.label + " เต็มแล้ว"
+      });
       return {
         success: false,
         message: "ห้อง " + roomConfig.label + " เต็มแล้ว"
@@ -342,6 +436,7 @@ function submitBooking(studentId, name, roomKey, typeKey) {
       studentId,
       roomConfig.label,
       name,
+      email,
       typeKey,
       bookedCount + 1
     ]);
@@ -354,6 +449,7 @@ function submitBooking(studentId, name, roomKey, typeKey) {
       roomLabel: roomConfig.label,
       name: name,
       studentId: studentId,
+      email: email,
       emoji: roomConfig.emoji,
       timestamp: now.toISOString(),
       sheet: config.sheet
@@ -361,6 +457,17 @@ function submitBooking(studentId, name, roomKey, typeKey) {
 
     invalidateRoomStatusCache_(typeKey);
     setBookingCache_(studentId, booking);
+    appendLogBook_({
+      action: "BOOK",
+      status: "SUCCESS",
+      studentId: studentId,
+      name: name,
+      email: email,
+      type: typeKey,
+      roomKey: roomKey,
+      roomLabel: roomConfig.label,
+      message: "จองสำเร็จ"
+    });
 
     return {
       success: true,
@@ -369,6 +476,16 @@ function submitBooking(studentId, name, roomKey, typeKey) {
     };
   } catch (error) {
     Logger.log("submitBooking error: " + error.message);
+    appendLogBook_({
+      action: "BOOK",
+      status: "ERROR",
+      studentId: studentId,
+      name: name,
+      email: email,
+      type: typeKey,
+      roomKey: roomKey,
+      message: error.message
+    });
     return {
       success: false,
       message: "เกิดข้อผิดพลาด: " + error.message
@@ -384,22 +501,39 @@ function cancelBooking(studentId) {
   const lock = LockService.getScriptLock();
   let lockAcquired = false;
 
+  studentId = normalizeStudentId_(studentId);
+
   try {
     if (!lock.tryLock(25000)) {
+      appendLogBook_({
+        action: "CANCEL",
+        status: "REJECTED",
+        studentId: studentId,
+        message: "ระบบกำลังประมวลผลคำขอจำนวนมาก กรุณาลองใหม่อีกครั้ง"
+      });
       return {
         success: false,
         message: "ระบบกำลังประมวลผลคำขอจำนวนมาก กรุณาลองใหม่อีกครั้ง"
       };
     }
     lockAcquired = true;
-
-    studentId = normalizeStudentId_(studentId);
     if (!studentId) {
+      appendLogBook_({
+        action: "CANCEL",
+        status: "REJECTED",
+        message: "ไม่พบรหัสนักศึกษา"
+      });
       return { success: false, message: "ไม่พบรหัสนักศึกษา" };
     }
 
     const booking = getBookingByStudentId_(studentId, { useCache: false });
     if (!booking) {
+      appendLogBook_({
+        action: "CANCEL",
+        status: "REJECTED",
+        studentId: studentId,
+        message: "ไม่พบการจอง"
+      });
       return { success: false, message: "ไม่พบการจอง" };
     }
 
@@ -413,6 +547,17 @@ function cancelBooking(studentId) {
 
     invalidateRoomStatusCache_(booking.type);
     removeBookingCache_(studentId);
+    appendLogBook_({
+      action: "CANCEL",
+      status: "SUCCESS",
+      studentId: booking.studentId,
+      name: booking.name,
+      email: booking.email,
+      type: booking.type,
+      roomKey: booking.roomKey,
+      roomLabel: booking.roomLabel,
+      message: "ยกเลิกการจองสำเร็จ"
+    });
 
     return {
       success: true,
@@ -420,6 +565,12 @@ function cancelBooking(studentId) {
     };
   } catch (error) {
     Logger.log("cancelBooking error: " + error.message);
+    appendLogBook_({
+      action: "CANCEL",
+      status: "ERROR",
+      studentId: studentId,
+      message: error.message
+    });
     return {
       success: false,
       message: "เกิดข้อผิดพลาด: " + error.message
@@ -488,7 +639,8 @@ function getBookingByStudentId_(studentId, options) {
       continue;
     }
 
-    const values = sheet.getRange(2, 1, lastRow - 1, 7).getValues();
+    ensureBookingSheetSchema_(sheet);
+    const values = sheet.getRange(2, 1, lastRow - 1, 8).getValues();
 
     for (let rowIndex = 0; rowIndex < values.length; rowIndex++) {
       const row = values[rowIndex];
@@ -507,6 +659,7 @@ function getBookingByStudentId_(studentId, options) {
         roomLabel: String(row[3] || (roomInfo ? roomInfo.label : "")),
         name: normalizeName_(row[4]),
         studentId: rowStudentId,
+        email: normalizeEmail_(row[5]),
         timestamp: row[0] instanceof Date ? row[0].toISOString() : String(row[0] || ""),
         row: rowIndex + 2,
         sheet: config.sheet,
@@ -538,6 +691,7 @@ function ensureSheet_(typeKey) {
   let sheet = spreadsheet.getSheetByName(config.sheet);
 
   if (sheet) {
+    ensureBookingSheetSchema_(sheet);
     return sheet;
   }
 
@@ -548,11 +702,12 @@ function ensureSheet_(typeKey) {
     "Student ID",
     "Room Label",
     "Name",
+    "Email",
     "Type",
     "No."
   ]);
 
-  const header = sheet.getRange(1, 1, 1, 7);
+  const header = sheet.getRange(1, 1, 1, 8);
   header
     .setBackground("#0f766e")
     .setFontColor("white")
@@ -564,8 +719,9 @@ function ensureSheet_(typeKey) {
   sheet.setColumnWidth(3, 120);
   sheet.setColumnWidth(4, 170);
   sheet.setColumnWidth(5, 200);
-  sheet.setColumnWidth(6, 110);
-  sheet.setColumnWidth(7, 70);
+  sheet.setColumnWidth(6, 230);
+  sheet.setColumnWidth(7, 110);
+  sheet.setColumnWidth(8, 70);
 
   return sheet;
 }
@@ -600,6 +756,7 @@ function sanitizeBooking_(booking) {
     roomLabel: String(booking.roomLabel || ""),
     name: String(booking.name || ""),
     studentId: String(booking.studentId || ""),
+    email: String(booking.email || ""),
     timestamp: String(booking.timestamp || ""),
     emoji: String(booking.emoji || "🛏️"),
     row: booking.row ? Number(booking.row) : null,
@@ -613,6 +770,349 @@ function normalizeStudentId_(value) {
 
 function normalizeName_(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function normalizeEmail_(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function enforceAllowedEmailDomain_(email) {
+  email = normalizeEmail_(email);
+
+  if (!email) {
+    throw new Error("กรุณากรอกอีเมลให้ถูกต้อง");
+  }
+  if (!/@su\.ac\.th$/i.test(email)) {
+    throw new Error("กรุณาใช้อีเมล @su.ac.th เท่านั้น");
+  }
+}
+
+function ensureBookingSheetSchema_(sheet) {
+  const expectedHeaders = [
+    "Timestamp",
+    "Room Key",
+    "Student ID",
+    "Room Label",
+    "Name",
+    "Email",
+    "Type",
+    "No."
+  ];
+  const currentMaxColumns = sheet.getMaxColumns();
+  const legacyHeaders = sheet.getRange(1, 1, 1, 7).getValues()[0];
+  const isLegacySchema =
+    String(legacyHeaders[0] || "").trim() === "Timestamp" &&
+    String(legacyHeaders[1] || "").trim() === "Room Key" &&
+    String(legacyHeaders[2] || "").trim() === "Student ID" &&
+    String(legacyHeaders[3] || "").trim() === "Room Label" &&
+    String(legacyHeaders[4] || "").trim() === "Name" &&
+    String(legacyHeaders[5] || "").trim() === "Type" &&
+    String(legacyHeaders[6] || "").trim() === "No.";
+
+  if (isLegacySchema) {
+    sheet.insertColumnAfter(5);
+  } else if (currentMaxColumns < 8) {
+    sheet.insertColumnsAfter(currentMaxColumns, 8 - currentMaxColumns);
+  }
+
+  const headerValues = sheet.getRange(1, 1, 1, expectedHeaders.length).getValues()[0];
+
+  for (let index = 0; index < expectedHeaders.length; index++) {
+    if (String(headerValues[index] || "").trim() !== expectedHeaders[index]) {
+      sheet.getRange(1, index + 1).setValue(expectedHeaders[index]);
+    }
+  }
+
+  sheet.setFrozenRows(1);
+}
+
+function ensureUserRegistrySheet_() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = spreadsheet.getSheetByName(USER_REGISTRY_SHEET);
+
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(USER_REGISTRY_SHEET);
+  }
+
+  const headers = ["Email", "Student ID", "Name", "Bound At", "Last Login At"];
+  const currentHeaders = sheet.getRange(1, 1, 1, headers.length).getValues()[0];
+
+  for (let index = 0; index < headers.length; index++) {
+    if (String(currentHeaders[index] || "").trim() !== headers[index]) {
+      sheet.getRange(1, index + 1).setValue(headers[index]);
+    }
+  }
+
+  sheet.setFrozenRows(1);
+  return sheet;
+}
+
+function ensureLogBookSheet_() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = spreadsheet.getSheetByName(LOG_BOOK_SHEET);
+
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(LOG_BOOK_SHEET);
+  }
+
+  const headers = [
+    "Timestamp",
+    "Action",
+    "Status",
+    "Student ID",
+    "Name",
+    "Email",
+    "Type",
+    "Room Key",
+    "Room Label",
+    "Message"
+  ];
+  const currentHeaders = sheet.getRange(1, 1, 1, headers.length).getValues()[0];
+
+  for (let index = 0; index < headers.length; index++) {
+    if (String(currentHeaders[index] || "").trim() !== headers[index]) {
+      sheet.getRange(1, index + 1).setValue(headers[index]);
+    }
+  }
+
+  sheet.setFrozenRows(1);
+  return sheet;
+}
+
+function appendLogBook_(entry) {
+  try {
+    const sheet = ensureLogBookSheet_();
+    sheet.appendRow([
+      new Date(),
+      String(entry.action || ""),
+      String(entry.status || ""),
+      String(entry.studentId || ""),
+      String(entry.name || ""),
+      String(entry.email || ""),
+      String(entry.type || ""),
+      String(entry.roomKey || ""),
+      String(entry.roomLabel || ""),
+      String(entry.message || "")
+    ]);
+  } catch (error) {
+    Logger.log("appendLogBook error: " + error.message);
+  }
+}
+
+function upsertUserIdentity_(email, studentId, name) {
+  email = normalizeEmail_(email);
+  studentId = normalizeStudentId_(studentId);
+  name = normalizeName_(name);
+
+  const sheet = ensureUserRegistrySheet_();
+  const lastRow = sheet.getLastRow();
+  const values = lastRow >= 2
+    ? sheet.getRange(2, 1, lastRow - 1, 5).getValues()
+    : [];
+  let emailRow = null;
+  let studentRow = null;
+
+  for (let index = 0; index < values.length; index++) {
+    const row = values[index];
+    const rowEmail = normalizeEmail_(row[0]);
+    const rowStudentId = normalizeStudentId_(row[1]);
+
+    if (rowEmail === email) {
+      emailRow = { index: index + 2, studentId: rowStudentId, name: normalizeName_(row[2]) };
+    }
+    if (rowStudentId === studentId) {
+      studentRow = { index: index + 2, email: rowEmail };
+    }
+  }
+
+  if (studentRow && studentRow.email !== email) {
+    throw new Error("รหัสนักศึกษานี้ถูกผูกกับอีเมลอื่นแล้ว");
+  }
+
+  const now = new Date();
+
+  if (emailRow) {
+    if (emailRow.studentId !== studentId) {
+      throw new Error("อีเมลนี้ถูกผูกกับรหัสนักศึกษาอื่นแล้ว");
+    }
+
+    sheet.getRange(emailRow.index, 3, 1, 3).setValues([[
+      name || emailRow.name,
+      values[emailRow.index - 2][3] || now,
+      now
+    ]]);
+
+    return {
+      email: email,
+      studentId: studentId,
+      name: name || emailRow.name
+    };
+  }
+
+  sheet.appendRow([email, studentId, name, now, now]);
+  return {
+    email: email,
+    studentId: studentId,
+    name: name
+  };
+}
+
+function resolveUserIdentity_(email, studentId, name) {
+  email = normalizeEmail_(email);
+  studentId = normalizeStudentId_(studentId);
+  name = normalizeName_(name);
+
+  const sheet = ensureUserRegistrySheet_();
+  const lastRow = sheet.getLastRow();
+  const values = lastRow >= 2
+    ? sheet.getRange(2, 1, lastRow - 1, 5).getValues()
+    : [];
+  let exactRow = null;
+  let emailRow = null;
+  let studentRow = null;
+
+  for (let index = 0; index < values.length; index++) {
+    const row = values[index];
+    const rowEmail = normalizeEmail_(row[0]);
+    const rowStudentId = normalizeStudentId_(row[1]);
+    const rowName = normalizeName_(row[2]);
+    const rowIndex = index + 2;
+
+    if (rowEmail === email && rowStudentId === studentId) {
+      exactRow = { index: rowIndex, email: rowEmail, studentId: rowStudentId, name: rowName };
+      break;
+    }
+    if (!emailRow && rowEmail === email) {
+      emailRow = { index: rowIndex, email: rowEmail, studentId: rowStudentId, name: rowName };
+    }
+    if (!studentRow && rowStudentId === studentId) {
+      studentRow = { index: rowIndex, email: rowEmail, studentId: rowStudentId, name: rowName };
+    }
+  }
+
+  if (exactRow) {
+    const now = new Date();
+    sheet.getRange(exactRow.index, 3, 1, 3).setValues([[
+      name || exactRow.name,
+      values[exactRow.index - 2][3] || now,
+      now
+    ]]);
+    return {
+      email: email,
+      studentId: studentId,
+      name: name || exactRow.name
+    };
+  }
+
+  if (emailRow || studentRow) {
+    if (emailRow && studentRow && emailRow.index === studentRow.index) {
+      const now = new Date();
+      sheet.getRange(emailRow.index, 3, 1, 3).setValues([[
+        name || emailRow.name || studentRow.name,
+        values[emailRow.index - 2][3] || now,
+        now
+      ]]);
+      return {
+        email: email,
+        studentId: studentId,
+        name: name || emailRow.name || studentRow.name
+      };
+    }
+    if (studentRow && studentRow.email !== email && canRebindIdentityRow_(studentRow, name)) {
+      const now = new Date();
+      sheet.getRange(studentRow.index, 1, 1, 5).setValues([[
+        email,
+        studentId,
+        name || studentRow.name,
+        values[studentRow.index - 2][3] || now,
+        now
+      ]]);
+      return {
+        email: email,
+        studentId: studentId,
+        name: name || studentRow.name
+      };
+    }
+    if (emailRow && emailRow.studentId !== studentId && canRebindIdentityRow_(emailRow, name)) {
+      const now = new Date();
+      sheet.getRange(emailRow.index, 1, 1, 5).setValues([[
+        email,
+        studentId,
+        name || emailRow.name,
+        values[emailRow.index - 2][3] || now,
+        now
+      ]]);
+      return {
+        email: email,
+        studentId: studentId,
+        name: name || emailRow.name
+      };
+    }
+    if (studentRow && studentRow.email !== email) {
+      throw new Error("รหัสนักศึกษานี้ถูกผูกกับอีเมลอื่นแล้ว");
+    }
+    if (emailRow && emailRow.studentId !== studentId) {
+      throw new Error("อีเมลนี้ถูกผูกกับรหัสนักศึกษาอื่นแล้ว");
+    }
+  }
+
+  return upsertUserIdentity_(email, studentId, name);
+}
+
+function canRebindIdentityRow_(row, name) {
+  const existingName = normalizeName_(row && row.name);
+  const inputName = normalizeName_(name);
+
+  if (!existingName || !inputName) {
+    return false;
+  }
+
+  return existingName === inputName;
+}
+
+function getUserIdentityByEmail_(email) {
+  email = normalizeEmail_(email);
+  if (!email) {
+    return null;
+  }
+
+  const sheet = ensureUserRegistrySheet_();
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) {
+    return null;
+  }
+
+  const values = sheet.getRange(2, 1, lastRow - 1, 5).getValues();
+  for (let index = 0; index < values.length; index++) {
+    const row = values[index];
+    if (normalizeEmail_(row[0]) === email) {
+      sheet.getRange(index + 2, 5).setValue(new Date());
+      return {
+        email: email,
+        studentId: normalizeStudentId_(row[1]),
+        name: normalizeName_(row[2])
+      };
+    }
+  }
+
+  return null;
+}
+
+function backfillBookingEmailIfMissing_(booking, email) {
+  if (!booking || normalizeEmail_(booking.email) || !booking.row || !booking.sheet) {
+    return booking;
+  }
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(booking.sheet);
+  if (!sheet) {
+    return booking;
+  }
+
+  ensureBookingSheetSchema_(sheet);
+  sheet.getRange(Number(booking.row), 6).setValue(normalizeEmail_(email));
+  booking.email = normalizeEmail_(email);
+  setBookingCache_(booking.studentId, booking);
+  return booking;
 }
 
 function buildRoomStatusCacheKey_(typeKey) {
